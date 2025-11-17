@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
+//@Configuration
 @Slf4j
 public class AppleOAuth2FeignConfig {
 
@@ -40,13 +40,13 @@ public class AppleOAuth2FeignConfig {
             log.error("Apple OAuth2 API 에러 - Method: {}, Status: {}, Reason: {}",
                     methodKey, response.status(), response.reason());
 
-            if (response.status() == 400) {
+/*            if (response.status() == 400) {
                 throw new HistoryException(ErrorCode.APPLE_JWT_ERROR);
             } else if (response.status() == 401) {
                 throw new HistoryException(ErrorCode.APPLE_JWT_ERROR);
             } else if (response.status() >= 500) {
                 throw new HistoryException(ErrorCode.APPLE_JWT_ERROR);
-            }
+            }*/
 
             return defaultErrorDecoder.decode(methodKey, response);
         }
