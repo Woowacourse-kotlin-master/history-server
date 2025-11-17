@@ -25,7 +25,7 @@ public class PointController {
 
     private final PointService pointService;
 
-    @Operation(summary = "포인트 내역 조회 API", description = "회원의 포인트 잔액과 거래 이력을 조회합니다.")
+    @Operation(summary = "포인트 헤더 내역 조회 API", description = "회원의 포인트 잔액과 거래 이력을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "포인트 내역 조회 성공"),
             @ApiResponse(responseCode = "404", description = "포인트 정보가 존재하지 않음")

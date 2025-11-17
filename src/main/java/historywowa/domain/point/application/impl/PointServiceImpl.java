@@ -36,8 +36,9 @@ public class PointServiceImpl implements PointService {
 
     @Override
     public GetPointRes getMemberPoint(String userId){
-        Point pointByMember = getPointByMember(getMemberOrThrow(userId));
-        return GetPointRes.of(pointByMember.getBalance());
+        Member findMember = getMemberOrThrow(userId);
+        Point pointByMember = getPointByMember(findMember);
+        return GetPointRes.of(pointByMember.getBalance(), findMember.getProfile());
     }
 
     private Point getPointByMember(Member member) {

@@ -8,10 +8,12 @@ import java.util.List;
 public record GetPointRes(
 
         @Schema(description = "현재 포인트 잔액", example = "120")
-        Long point
+        Long point,
+
+        String profile
 ) {
 
-    public static GetPointRes of(Long point) {
-        return new GetPointRes(point);
+    public static GetPointRes of(Long point, String profile) {
+        return new GetPointRes(point, profile);
     }
 }
