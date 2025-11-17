@@ -1,5 +1,6 @@
 package historywowa.domain.member.domain.entity;
 
+import historywowa.domain.heritage.domain.entity.Heritage;
 import historywowa.domain.oauth2.domain.entity.SocialProvider;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -22,7 +23,8 @@ public class Member {
     @Column(unique = true, nullable = false)
     private String id;
 
-
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Heritage> heritages = new ArrayList<>();
 
 
     @Column(nullable = false)

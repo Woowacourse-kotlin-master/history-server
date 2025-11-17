@@ -1,6 +1,6 @@
 package historywowa.global.config;
 
-import historywowa.global.infra.exception.auth.BoombimAuthExceptionFilter;
+import historywowa.global.infra.exception.auth.HistoryAuthExceptionFilter;
 import historywowa.global.infra.filter.HistoryJWTFilter;
 import historywowa.global.jwt.util.JWTUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,7 +84,7 @@ public class SecurityConfig {
                                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
                         ))
 
-                .addFilterAfter(new BoombimAuthExceptionFilter(objectMapper), CorsFilter.class)
+                .addFilterAfter(new HistoryAuthExceptionFilter(objectMapper), CorsFilter.class)
                 .addFilterAfter(new HistoryJWTFilter(jwtUtil, excludedUrls),
                         UsernamePasswordAuthenticationFilter.class);
 

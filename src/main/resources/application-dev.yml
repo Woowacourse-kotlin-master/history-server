@@ -16,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
 
   servlet:
     multipart:
@@ -102,4 +102,4 @@ openai:
     url: https://api.openai.com
     key: ${OPENAI_API_KEY}
   text:
-    model: gpt-4o
+    model: gpt-4o-mini

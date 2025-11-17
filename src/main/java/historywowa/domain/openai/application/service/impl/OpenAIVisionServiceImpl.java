@@ -11,6 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Base64;
 import java.util.List;
 
 @Service
@@ -29,36 +33,83 @@ public class OpenAIVisionServiceImpl implements OpenAIVisionService {
     @Override
     public String analyzeHeritageImage(String imageUrl) {
         try {
-            OpenAIVisionReq request = buildVisionRequest(imageUrl);
+            // 1) URL → Base64 Data URL 변환
+            String dataUrl = convertImageUrlToDataUrl(imageUrl);
+
+            // 2) Vision 요청 생성
+            OpenAIVisionReq request = buildVisionRequest(dataUrl);
+
+            // 3) API 호출
             OpenAIVisionRes response = callVisionAPI(request);
+
+            // 4) 결과 텍스트 추출
             return extractContent(response);
+
         } catch (Exception e) {
             log.error("문화재 이미지 분석 실패: {}", e.getMessage());
             throw new HistoryException(ErrorCode.OPENAI_NOT_EXIST);
         }
     }
 
-    private OpenAIVisionReq buildVisionRequest(String imageUrl) {
+    /**
+     * 이미지 URL을 실제로 다운로드한 후 Base64 data URL로 변환.
+     */
+    private String convertImageUrlToDataUrl(String imageUrl) {
+        try (InputStream in = new URL(imageUrl).openStream();
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+
+            while ((bytesRead = in.read(buffer)) != -1) {
+                baos.write(buffer, 0, bytesRead);
+            }
+
+            byte[] imageBytes = baos.toByteArray();
+            String base64 = Base64.getEncoder().encodeToString(imageBytes);
+
+
+            return "data:image/jpeg;base64," + base64;
+
+        } catch (Exception e) {
+            throw new HistoryException(ErrorCode.OPENAI_NOT_EXIST);
+        }
+    }
+
+    private OpenAIVisionReq buildVisionRequest(String base64Data) {
         String prompt = buildVisionPrompt();
+
+        var textContent = new OpenAIVisionReq.TextContent(
+                "text",
+                prompt
+        );
+
+        var imageContent = new OpenAIVisionReq.ImageContent(
+                "image_url",
+                new OpenAIVisionReq.ImageUrl(base64Data)
+        );
+
+        var message = new OpenAIVisionReq.Message(
+                "user",
+                List.of(textContent, imageContent)
+        );
+
+        var req = new OpenAIVisionReq(
+                model,
+                List.of(message)
+        );
+
 
         return new OpenAIVisionReq(
                 model,
                 List.of(
                         new OpenAIVisionReq.Message(
                                 "user",
-                                List.of(
-                                        new OpenAIVisionReq.Content("text", prompt, null),
-                                        new OpenAIVisionReq.Content(
-                                                "image_url",
-                                                null,
-                                                new OpenAIVisionReq.ImageUrl(imageUrl)
-                                        )
-                                )
+                                List.of(textContent, imageContent)
                         )
                 )
         );
     }
-
 
     private OpenAIVisionRes callVisionAPI(OpenAIVisionReq request) {
         return openAIVisionFeignClient.generateVision(

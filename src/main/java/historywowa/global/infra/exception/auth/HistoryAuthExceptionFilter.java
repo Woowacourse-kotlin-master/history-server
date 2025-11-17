@@ -18,7 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 @RequiredArgsConstructor
 @Slf4j
-public class BoombimAuthExceptionFilter extends OncePerRequestFilter {
+public class HistoryAuthExceptionFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
 
@@ -37,7 +37,7 @@ public class BoombimAuthExceptionFilter extends OncePerRequestFilter {
     }
 
     private void handleFlowException(HttpServletResponse response, HistoryException e) throws IOException {
-        log.error("Filter에서 BoombimException 발생 - ErrorCode: {}, Message: {}",
+        log.error("Filter에서 HistoryException 발생 - ErrorCode: {}, Message: {}",
                 e.getErrorCode(), e.getMessage());
 
         response.setStatus(e.getHttpStatusCode());

@@ -27,7 +27,7 @@ public class S3ServiceImpl implements S3Service {
 
 
     @Override
-    public String storeUserProFile(MultipartFile multipartFile, String userId) throws IOException {
+    public String storeImage(MultipartFile multipartFile, String userId) throws IOException {
         if (multipartFile.isEmpty()) {
             return null;
         }

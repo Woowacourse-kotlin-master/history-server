@@ -53,6 +53,8 @@ public enum ErrorCode {
     ADMIN_PERMISSION_REQUIRED(-213, "관리자 권한이 필요합니다.", 403),
 
 
+    // openAI
+    OPENAI_NOT_EXIST(-300, "OpenAI 오류",500),
 
     // point
     POINT_NOT_EXIST(-1000, "해당 포인트가 존재하지 않습니다.", 404),
