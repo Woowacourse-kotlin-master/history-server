@@ -48,7 +48,7 @@ public class HeritageServiceImpl implements HeritageService {
     }
 
     private void validatePoint(Member member) {
-        Long point = pointService.getMemberPoint(member);
+        Long point = pointService.getMemberPoint(member.getId()).point();
         if (point == 0) {
             throw new HistoryException(ErrorCode.INSUFFICIENT_POINT_FOR_HERITAGE);
         }

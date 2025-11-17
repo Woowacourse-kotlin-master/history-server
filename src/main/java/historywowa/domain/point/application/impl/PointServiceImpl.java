@@ -10,6 +10,7 @@ import historywowa.domain.point.domain.entity.type.*;
 import historywowa.domain.point.domain.repository.*;
 import historywowa.domain.point.presentation.dto.req.*;
 import historywowa.domain.point.presentation.dto.res.*;
+import historywowa.global.infra.exception.error.ErrorCode;
 import historywowa.global.infra.exception.error.HistoryException;
 import jakarta.transaction.Transactional;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 public class PointServiceImpl implements PointService {
 
     private final PointRepository pointRepository;
+    private final MemberRepository memberRepository;
 
     @Override
     public void usePointForHeritage(Member member) {
@@ -33,13 +35,19 @@ public class PointServiceImpl implements PointService {
     }
 
     @Override
-    public Long getMemberPoint(Member member){
-        Point pointByMember = getPointByMember(member);
-        return pointByMember.getBalance();
+    public GetPointRes getMemberPoint(String userId){
+        Member findMember = getMemberOrThrow(userId);
+        Point pointByMember = getPointByMember(findMember);
+        return GetPointRes.of(pointByMember.getBalance(), findMember.getProfile());
     }
 
     private Point getPointByMember(Member member) {
         return pointRepository.findByMember(member)
                 .orElseThrow(() -> new HistoryException(POINT_NOT_EXIST));
+    }
+
+    private Member getMemberOrThrow(String userId) {
+        return memberRepository.findById(userId)
+                .orElseThrow(() -> new HistoryException(ErrorCode.USER_NOT_EXIST));
     }
 }

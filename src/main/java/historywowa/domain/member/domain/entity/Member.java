@@ -33,9 +33,6 @@ public class Member {
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private Point point;
 
-    // 3) 포인트 내역 조회
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PointHistory> pointHistories = new ArrayList<>();
 
 
     @Column(nullable = false)
