@@ -6,8 +6,8 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
+/*@Repository
 public interface PointHistoryRepository extends JpaRepository<PointHistory, Long> {
 
     List<PointHistory> findAllByMemberOrderByCreatedAtDesc(Member member);
-}
+}*/
