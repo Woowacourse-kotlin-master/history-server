@@ -10,6 +10,8 @@ import historywowa.domain.oauth2.presentation.dto.res.LoginToken;
 import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoTokenResponse;
 import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoUserResponse;
 import historywowa.domain.member.domain.entity.Role;
+import historywowa.domain.point.domain.entity.Point;
+import historywowa.domain.point.domain.repository.PointRepository;
 import java.util.*;
 import historywowa.domain.member.domain.repository.MemberRepository;
 import historywowa.global.infra.exception.error.HistoryException;
@@ -35,31 +37,32 @@ public class SocialLoginServiceImpl implements SocialLoginService {
     private final CreateAccessTokenAndRefreshTokenService tokenService;
     private final MemberRepository userRepository;
     private final SocialTokenRepository socialTokenRepository;
-
+    private final PointRepository pointRepository;
 
 
     @Value("${oauth2.apple.profile}")
     private String appleProfile;
 
     public SocialLoginServiceImpl(List<OAuth2Service> oauth2Services,
-        CreateAccessTokenAndRefreshTokenService tokenService,
-        MemberRepository userRepository,
-        SocialTokenRepository socialTokenRepository
+                                  CreateAccessTokenAndRefreshTokenService tokenService,
+                                  MemberRepository userRepository,
+                                  SocialTokenRepository socialTokenRepository,
+                                  PointRepository pointRepository
     ) {
         this.tokenService = tokenService;
         this.userRepository = userRepository;
         this.socialTokenRepository = socialTokenRepository;
-
+        this.pointRepository = pointRepository;
         log.info("=== OAuth2Service 목록 ===");
         oauth2Services.forEach(service -> {
             log.info("OAuth2Service: {}, Provider: {}", service.getClass().getSimpleName(), service.getProvider());
         });
 
         this.oauth2Services = oauth2Services.stream()
-            .collect(Collectors.toMap(
-                OAuth2Service::getProvider,
-                Function.identity()
-            ));
+                .collect(Collectors.toMap(
+                        OAuth2Service::getProvider,
+                        Function.identity()
+                ));
 
         log.info("=== OAuth2Services 매핑 결과 ===");
         this.oauth2Services.forEach((provider, service) -> {
@@ -75,8 +78,8 @@ public class SocialLoginServiceImpl implements SocialLoginService {
 
         // Apple일 경우 idToken 검증, 나머지는 accessToken 검증
         boolean isValidToken = (provider == SocialProvider.APPLE)
-            ? oauth2Service.validateToken(tokenRequest.idToken())
-            : oauth2Service.validateToken(tokenRequest.accessToken());
+                ? oauth2Service.validateToken(tokenRequest.idToken())
+                : oauth2Service.validateToken(tokenRequest.accessToken());
 
         if (!isValidToken) {
             throw new HistoryException(ErrorCode.INVALID_PARAMETER, "유효하지 않은 토큰입니다");
@@ -102,9 +105,9 @@ public class SocialLoginServiceImpl implements SocialLoginService {
 
         // 5. JWT 토큰 생성 및 반환
         return tokenService.createAccessTokenAndRefreshToken(
-            user.getId(),
-            user.getRole(),
-            user.getEmail()
+                user.getId(),
+                user.getRole(),
+                user.getEmail()
         );
     }
 
@@ -128,9 +131,9 @@ public class SocialLoginServiceImpl implements SocialLoginService {
         Member user = createSocialUser(provider, tokenResponse, userResponse);
 
         return tokenService.createAccessTokenAndRefreshToken(
-            user.getId(),
-            user.getRole(),
-            user.getEmail()
+                user.getId(),
+                user.getRole(),
+                user.getEmail()
         );
     }
 
@@ -150,7 +153,7 @@ public class SocialLoginServiceImpl implements SocialLoginService {
         OAuth2Service service = oauth2Services.get(provider);
         if (service == null) {
             log.error("Provider {}에 대한 OAuth2Service를 찾을 수 없습니다. 사용 가능한 Provider: {}",
-                provider, oauth2Services.keySet());
+                    provider, oauth2Services.keySet());
             throw new HistoryException(ErrorCode.INVALID_PARAMETER);
         }
 
@@ -159,8 +162,8 @@ public class SocialLoginServiceImpl implements SocialLoginService {
     }
 
     private Member createSocialUser(SocialProvider provider,
-        KakaoTokenResponse tokenResponse,
-        KakaoUserResponse userResponse) {
+                                    KakaoTokenResponse tokenResponse,
+                                    KakaoUserResponse userResponse) {
         log.info("소셜 사용자 생성 시작: provider={}, userId={}", provider, userResponse.id());
 
         if (userResponse.id() == null || userResponse.id().isEmpty()) {
@@ -180,26 +183,30 @@ public class SocialLoginServiceImpl implements SocialLoginService {
             log.info("신규 {} 사용자 생성: {}", provider, userResponse.getName());
             if (provider == SocialProvider.APPLE) {
                 user = Member.builder()
-                    .id(userResponse.id())
-                    .email(userResponse.getEmail())
-                    .name(userResponse.getName())
-                    .profile(appleProfile)
-                    .socialProvider(provider)
-                    .role(Role.USER)
-                    .build();
+                        .id(userResponse.id())
+                        .email(userResponse.getEmail())
+                        .name(userResponse.getName())
+                        .profile(appleProfile)
+                        .socialProvider(provider)
+                        .role(Role.USER)
+                        .build();
             } else {
                 user = Member.builder()
-                    .id(userResponse.id())
-                    .email(userResponse.getEmail())
-                    .name(userResponse.getName())
-                    .profile(userResponse.getProfile())
-                    .socialProvider(provider)
-                    .role(Role.USER)
-                    .build();
+                        .id(userResponse.id())
+                        .email(userResponse.getEmail())
+                        .name(userResponse.getName())
+                        .profile(userResponse.getProfile())
+                        .socialProvider(provider)
+                        .role(Role.USER)
+                        .build();
             }
 
             userRepository.save(user);
-
+            Point point = Point
+                    .builder()
+                    .member(user)
+                    .build();
+            pointRepository.save(point);
 
         } else {
             if (!user.getEmail().equals(userResponse.getEmail())) {
@@ -220,17 +227,17 @@ public class SocialLoginServiceImpl implements SocialLoginService {
 
     private void saveSocialToken(String userId, SocialProvider provider, KakaoTokenResponse tokenResponse) {
         LocalDateTime expiresAt = LocalDateTime.now().plusSeconds(
-            tokenResponse.expiresIn() != null ? tokenResponse.expiresIn() : 3600L
+                tokenResponse.expiresIn() != null ? tokenResponse.expiresIn() : 3600L
         );
 
         SocialToken socialToken = SocialToken.builder()
-            .id(SocialToken.generateId(userId, provider))
-            .userId(userId)
-            .provider(provider)
-            .accessToken(tokenResponse.accessToken())
-            .refreshToken(tokenResponse.refreshToken())
-            .expiresIn(expiresAt)
-            .build();
+                .id(SocialToken.generateId(userId, provider))
+                .userId(userId)
+                .provider(provider)
+                .accessToken(tokenResponse.accessToken())
+                .refreshToken(tokenResponse.refreshToken())
+                .expiresIn(expiresAt)
+                .build();
 
         socialTokenRepository.deleteByUserIdAndProvider(userId, provider);
         socialTokenRepository.save(socialToken);

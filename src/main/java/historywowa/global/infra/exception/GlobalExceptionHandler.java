@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HistoryException.class)
     public ResponseEntity<ErrorResponse> handleFlowException(HistoryException e) {
-        log.error("BoombimException caught - ErrorCode: {}, Message: {}",
+        log.error("HistoryException caught - ErrorCode: {}, Message: {}",
             e.getErrorCode(), e.getMessage());
         return ResponseEntity
             .status(e.getHttpStatusCode())
