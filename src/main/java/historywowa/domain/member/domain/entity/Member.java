@@ -2,6 +2,8 @@ package historywowa.domain.member.domain.entity;
 
 import historywowa.domain.heritage.domain.entity.Heritage;
 import historywowa.domain.oauth2.domain.entity.SocialProvider;
+import historywowa.domain.point.domain.entity.Point;
+import historywowa.domain.point.domain.entity.PointHistory;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,8 +25,17 @@ public class Member {
     @Column(unique = true, nullable = false)
     private String id;
 
+    // 1) 문화재 이미지 리스트 조회
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Heritage> heritages = new ArrayList<>();
+
+    // 2) 포인트
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Point point;
+
+    // 3) 포인트 내역 조회
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PointHistory> pointHistories = new ArrayList<>();
 
 
     @Column(nullable = false)
