@@ -1,7 +1,15 @@
 package historywowa.domain.point.domain.entity
 
 import historywowa.domain.member.domain.entity.Member
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToOne
+import jakarta.persistence.Table
 import org.hibernate.annotations.Comment
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.DynamicUpdate
@@ -11,16 +19,16 @@ import java.time.LocalDateTime
 @Table(name = "point")
 @DynamicUpdate
 class Point(
-        @OneToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "member_id", nullable = false, unique = true)
-        val member: Member,
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false, unique = true)
+    val member: Member,
 
-        @Column(name = "balance", nullable = false)
-        var balance: Long = 2L,
+    @Column(name = "balance", nullable = false)
+    var balance: Long = 2L,
 
-        @Column(name = "apply_event_count", nullable = false)
-        @Comment("이벤트 응모권 수 하루 최대 5회")
-        var applyEventCount: Long = 0L
+    @Column(name = "apply_event_count", nullable = false)
+    @Comment("이벤트 응모권 수 하루 최대 5회")
+    var applyEventCount: Long = 0L
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,5 +53,4 @@ class Point(
     fun subtractBalance(amount: Long) {
         this.balance -= amount
     }
-
 }

@@ -14,25 +14,25 @@ import org.springframework.stereotype.Service
 @Service
 @Transactional
 class MemberServiceImpl(
-        private val memberRepository: MemberRepository,
-        private val heritageRepository: HeritageRepository
+    private val memberRepository: MemberRepository,
+    private val heritageRepository: HeritageRepository
 ) : MemberService {
 
     override fun infoMyPage(userId: String): MyPageRes {
         val member = getMemberOrThrow(userId)
 
         val heritageDtos = heritageRepository.findByMember(member)
-                .map { HeritageDto.of(it.heritageUrl, it.heritageText) }
+            .map { HeritageDto.of(it.heritageUrl, it.heritageText) }
 
         return MyPageRes.of(
-                member.name,
-                member.profile,
-                heritageDtos
+            member.name,
+            member.profile,
+            heritageDtos
         )
     }
 
     private fun getMemberOrThrow(userId: String): Member {
         return memberRepository.findById(userId)
-                .orElseThrow { HistoryException(ErrorCode.USER_NOT_EXIST) }
+            .orElseThrow { HistoryException(ErrorCode.USER_NOT_EXIST) }
     }
 }

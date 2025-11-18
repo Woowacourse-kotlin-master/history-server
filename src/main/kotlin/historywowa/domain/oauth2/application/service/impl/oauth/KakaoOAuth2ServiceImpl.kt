@@ -17,20 +17,20 @@ import org.springframework.stereotype.Service
 @Service
 @Transactional
 class KakaoOAuth2ServiceImpl(
-        private val kakaoOAuth2URLFeignClient: KakaoOAuth2URLFeignClient,
-        private val kakaoOAuth2UserFeignClient: KakaoOAuth2UserFeignClient,
+    private val kakaoOAuth2URLFeignClient: KakaoOAuth2URLFeignClient,
+    private val kakaoOAuth2UserFeignClient: KakaoOAuth2UserFeignClient,
 
-        @Value("\${oauth2.kakao.client-id}")
-        private val clientId: String,
+    @Value("\${oauth2.kakao.client-id}")
+    private val clientId: String,
 
-        @Value("\${oauth2.kakao.client-secret}")
-        private val clientSecret: String,
+    @Value("\${oauth2.kakao.client-secret}")
+    private val clientSecret: String,
 
-        @Value("\${oauth2.kakao.redirect-uri}")
-        private val redirectUri: String,
+    @Value("\${oauth2.kakao.redirect-uri}")
+    private val redirectUri: String,
 
-        @Value("\${oauth2.kakao.base-url}")
-        private val baseUrl: String
+    @Value("\${oauth2.kakao.base-url}")
+    private val baseUrl: String
 ) : OAuth2Service {
 
     private val log = LoggerFactory.getLogger(KakaoOAuth2ServiceImpl::class.java)
@@ -42,20 +42,20 @@ class KakaoOAuth2ServiceImpl(
 
     override fun getTokens(code: String): KakaoTokenResponse {
         return kakaoOAuth2URLFeignClient.getAccessToken(
-                code,
-                clientId,
-                clientSecret,
-                redirectUri,
-                "authorization_code"
+            code,
+            clientId,
+            clientSecret,
+            redirectUri,
+            "authorization_code"
         )
     }
 
     override fun refreshTokens(refreshToken: String): KakaoTokenResponse {
         return kakaoOAuth2URLFeignClient.refreshToken(
-                "refresh_token",
-                refreshToken,
-                clientId,
-                clientSecret
+            "refresh_token",
+            refreshToken,
+            clientId,
+            clientSecret
         )
     }
 
@@ -84,10 +84,10 @@ class KakaoOAuth2ServiceImpl(
 
     override fun convertToTokenResponse(tokenRequest: SocialTokenRequest): KakaoTokenResponse {
         return KakaoTokenResponse(
-                tokenRequest.accessToken,
-                tokenRequest.refreshToken,
-                "idnull",
-                tokenRequest.expiresIn
+            tokenRequest.accessToken,
+            tokenRequest.refreshToken,
+            "idnull",
+            tokenRequest.expiresIn
         )
     }
 

@@ -8,49 +8,49 @@ import java.time.LocalDateTime
 
 @JsonInclude(Include.NON_NULL)
 data class ErrorResponse(
-        val status: Int,
-        val code: Int,
-        val message: String,
-        val time: LocalDateTime,
-        val retryAt: LocalDateTime? = null
+    val status: Int,
+    val code: Int,
+    val message: String,
+    val time: LocalDateTime,
+    val retryAt: LocalDateTime? = null
 ) {
     companion object {
 
         fun of(e: HistoryException): ErrorResponse =
-                ErrorResponse(
-                        status = e.httpStatusCode,
-                        code = e.errorCode.code,
-                        message = e.message ?: e.errorCode.message,
-                        time = LocalDateTime.now()
-                )
+            ErrorResponse(
+                status = e.httpStatusCode,
+                code = e.errorCode.code,
+                message = e.message ?: e.errorCode.message,
+                time = LocalDateTime.now()
+            )
 
         fun of(errorCode: ErrorCode): ErrorResponse =
-                ErrorResponse(
-                        status = errorCode.httpCode,
-                        code = errorCode.code,
-                        message = errorCode.message,
-                        time = LocalDateTime.now()
-                )
+            ErrorResponse(
+                status = errorCode.httpCode,
+                code = errorCode.code,
+                message = errorCode.message,
+                time = LocalDateTime.now()
+            )
 
         fun of(errorCode: ErrorCode, customMessage: String): ErrorResponse =
-                ErrorResponse(
-                        status = errorCode.httpCode,
-                        code = errorCode.code,
-                        message = customMessage,
-                        time = LocalDateTime.now()
-                )
+            ErrorResponse(
+                status = errorCode.httpCode,
+                code = errorCode.code,
+                message = customMessage,
+                time = LocalDateTime.now()
+            )
 
         fun of(
-                errorCode: ErrorCode,
-                now: LocalDateTime,
-                retryAt: LocalDateTime
+            errorCode: ErrorCode,
+            now: LocalDateTime,
+            retryAt: LocalDateTime
         ): ErrorResponse =
-                ErrorResponse(
-                        status = errorCode.httpCode,
-                        code = errorCode.code,
-                        message = errorCode.message,
-                        time = now,
-                        retryAt = retryAt
-                )
+            ErrorResponse(
+                status = errorCode.httpCode,
+                code = errorCode.code,
+                message = errorCode.message,
+                time = now,
+                retryAt = retryAt
+            )
     }
 }

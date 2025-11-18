@@ -19,23 +19,23 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/heritage")
 @Tag(name = "Heritage", description = "문화재 이미지 전용 API")
 class HeritageController(
-        private val heritageService: HeritageService
+    private val heritageService: HeritageService
 ) {
 
     @Operation(
-            summary = "문화재 이미지 인식 API",
-            description = "업로드된 이미지로 문화재를 인식합니다."
+        summary = "문화재 이미지 인식 API",
+        description = "업로드된 이미지로 문화재를 인식합니다."
     )
     @ApiResponses(
-            value = [
-                ApiResponse(responseCode = "200", description = "문화재 이미지 인식 성공"),
-                ApiResponse(responseCode = "404", description = "유저 존재하지 않음")
-            ]
+        value = [
+            ApiResponse(responseCode = "200", description = "문화재 이미지 인식 성공"),
+            ApiResponse(responseCode = "404", description = "유저 존재하지 않음")
+        ]
     )
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun recognizeHeritageImage(
-            @AuthenticationPrincipal userId: String,
-            @RequestPart heritageImage: MultipartFile
+        @AuthenticationPrincipal userId: String,
+        @RequestPart heritageImage: MultipartFile
     ): ResponseEntity<HeritageImageRes> {
         return ResponseEntity.ok(heritageService.recognize(heritageImage, userId))
     }

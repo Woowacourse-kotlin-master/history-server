@@ -16,17 +16,17 @@ import java.util.Date
 @Component
 class AppleJwtUtils(
 
-        @Value("\${oauth2.apple.team-id}")
-        private val teamId: String,
+    @Value("\${oauth2.apple.team-id}")
+    private val teamId: String,
 
-        @Value("\${oauth2.apple.key-id}")
-        private val keyId: String,
+    @Value("\${oauth2.apple.key-id}")
+    private val keyId: String,
 
-        @Value("\${oauth2.apple.private-key}")
-        private val privateKey: String,
+    @Value("\${oauth2.apple.private-key}")
+    private val privateKey: String,
 
-        @Value("\${oauth2.apple.client-id}")
-        private val clientId: String
+    @Value("\${oauth2.apple.client-id}")
+    private val clientId: String
 ) {
 
     private val log = LoggerFactory.getLogger(AppleJwtUtils::class.java)
@@ -36,16 +36,15 @@ class AppleJwtUtils(
             val pKey = getPrivateKey()
 
             Jwts.builder()
-                    .setHeaderParam("kid", keyId)
-                    .setHeaderParam("alg", "ES256")
-                    .setIssuer(teamId)
-                    .setIssuedAt(Date())
-                    .setExpiration(Date(System.currentTimeMillis() + 3600000)) // 1시간
-                    .setAudience("https://appleid.apple.com")
-                    .setSubject(clientId)
-                    .signWith(pKey, SignatureAlgorithm.ES256)
-                    .compact()
-
+                .setHeaderParam("kid", keyId)
+                .setHeaderParam("alg", "ES256")
+                .setIssuer(teamId)
+                .setIssuedAt(Date())
+                .setExpiration(Date(System.currentTimeMillis() + 3600000)) // 1시간
+                .setAudience("https://appleid.apple.com")
+                .setSubject(clientId)
+                .signWith(pKey, SignatureAlgorithm.ES256)
+                .compact()
         } catch (e: Exception) {
             log.error("Apple JWT 생성 실패", e)
             throw HistoryException(ErrorCode.APPLE_JWT_ERROR)
@@ -55,9 +54,9 @@ class AppleJwtUtils(
     private fun getPrivateKey(): PrivateKey {
         return try {
             val privateKeyPEM = privateKey
-                    .replace("-----BEGIN PRIVATE KEY-----", "")
-                    .replace("-----END PRIVATE KEY-----", "")
-                    .replace("\\s".toRegex(), "")
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replace("\\s".toRegex(), "")
 
             val keyBytes = Base64.getDecoder().decode(privateKeyPEM)
 
@@ -65,7 +64,6 @@ class AppleJwtUtils(
             val keyFactory = KeyFactory.getInstance("EC")
 
             keyFactory.generatePrivate(spec)
-
         } catch (e: Exception) {
             log.error("Apple Private Key 파싱 실패", e)
             throw HistoryException(ErrorCode.APPLE_ERROR_KEY)

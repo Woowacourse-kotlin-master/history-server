@@ -13,26 +13,23 @@ import org.springframework.web.filter.OncePerRequestFilter
 import javax.security.sasl.AuthenticationException
 
 class HistoryAuthExceptionFilter(
-        private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper
 ) : OncePerRequestFilter() {
 
     private val log = LoggerFactory.getLogger(HistoryAuthExceptionFilter::class.java)
 
     @Throws(ServletException::class, java.io.IOException::class)
     override fun doFilterInternal(
-            request: HttpServletRequest,
-            response: HttpServletResponse,
-            filterChain: FilterChain
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain
     ) {
         try {
             filterChain.doFilter(request, response)
-
         } catch (e: HistoryException) {
             handleFlowException(response, e)
-
         } catch (e: AuthenticationException) {
             handleAuthenticationException(response)
-
         } catch (e: Exception) {
             log.error("Filter에서 예상치 못한 오류 발생", e)
             handleUnexpectedException(response)
@@ -42,9 +39,9 @@ class HistoryAuthExceptionFilter(
     @Throws(java.io.IOException::class)
     private fun handleFlowException(response: HttpServletResponse, e: HistoryException) {
         log.error(
-                "Filter에서 HistoryException 발생 - ErrorCode: {}, Message: {}",
-                e.errorCode,
-                e.message
+            "Filter에서 HistoryException 발생 - ErrorCode: {}, Message: {}",
+            e.errorCode,
+            e.message
         )
 
         response.status = e.httpStatusCode

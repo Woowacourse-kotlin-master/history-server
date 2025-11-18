@@ -3,7 +3,6 @@ package historywowa.domain.point.application.impl
 import historywowa.domain.member.domain.entity.Member
 import historywowa.domain.member.domain.repository.MemberRepository
 import historywowa.domain.point.application.PointService
-
 import historywowa.domain.point.domain.entity.Point
 import historywowa.domain.point.domain.repository.PointRepository
 import historywowa.domain.point.presentation.dto.res.GetPointRes
@@ -16,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional
 class PointServiceImpl(
-        private val pointRepository: PointRepository,
-        private val memberRepository: MemberRepository
+    private val pointRepository: PointRepository,
+    private val memberRepository: MemberRepository
 ) : PointService {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -31,18 +30,18 @@ class PointServiceImpl(
         val findMember = getMemberOrThrow(userId)
         val pointByMember = getPointByMember(findMember)
         val profile = findMember.profile
-        if(profile !=null) return GetPointRes.of(pointByMember.balance, profile)
+        if (profile != null) return GetPointRes.of(pointByMember.balance, profile)
 
         return GetPointRes.of(pointByMember.balance, "test")
     }
 
     private fun getPointByMember(member: Member): Point {
         return pointRepository.findByMember(member)
-                .orElseThrow { HistoryException(ErrorCode.POINT_NOT_EXIST) }
+            .orElseThrow { HistoryException(ErrorCode.POINT_NOT_EXIST) }
     }
 
     private fun getMemberOrThrow(userId: String): Member {
         return memberRepository.findById(userId)
-                .orElseThrow { HistoryException(ErrorCode.USER_NOT_EXIST) }
+            .orElseThrow { HistoryException(ErrorCode.USER_NOT_EXIST) }
     }
 }

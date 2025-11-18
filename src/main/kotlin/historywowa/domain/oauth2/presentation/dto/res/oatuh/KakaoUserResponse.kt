@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class KakaoUserResponse(
 
-        @JsonProperty("id")
-        val id: String? = null,
+    @JsonProperty("id")
+    val id: String? = null,
 
-        @JsonProperty("kakao_account")
-        val kakaoAccount: KakaoAccount? = null
+    @JsonProperty("kakao_account")
+    val kakaoAccount: KakaoAccount? = null
 ) {
 
     /** 프로필 이름 */
@@ -27,18 +27,18 @@ data class KakaoUserResponse(
     }
 
     data class KakaoAccount(
-            @JsonProperty("profile")
-            val profile: Profile? = null,
+        @JsonProperty("profile")
+        val profile: Profile? = null,
 
-            @JsonProperty("email")
-            val email: String? = null
+        @JsonProperty("email")
+        val email: String? = null
     )
 
     data class Profile(
-            @JsonProperty("nickname")
-            val nickname: String? = null,
+        @JsonProperty("nickname")
+        val nickname: String? = null,
 
-            @JsonProperty("profile_image_url")
-            val profileImageUrl: String? = null
+        @JsonProperty("profile_image_url")
+        val profileImageUrl: String? = null
     )
 }

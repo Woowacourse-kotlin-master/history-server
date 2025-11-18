@@ -15,7 +15,7 @@ import java.util.Base64
 
 @Service
 class OpenAIVisionServiceImpl(
-        private val openAIVisionFeignClient: OpenAIVisionFeignClient
+    private val openAIVisionFeignClient: OpenAIVisionFeignClient
 ) : OpenAIVisionService {
 
     @Value("\${openai.api.key}")
@@ -79,27 +79,27 @@ class OpenAIVisionServiceImpl(
         val prompt = buildVisionPrompt()
 
         val textContent = OpenAIVisionReq.TextContent(
-                type = "text",
-                text = prompt
+            type = "text",
+            text = prompt
         )
 
         val imageUrl = OpenAIVisionReq.ImageUrl(
-                url = base64Data
+            url = base64Data
         )
 
         val imageContent = OpenAIVisionReq.ImageContent(
-                type = "image_url",
-                image_url = imageUrl
+            type = "image_url",
+            image_url = imageUrl
         )
 
         val message = OpenAIVisionReq.Message(
-                role = "user",
-                content = listOf(textContent, imageContent)
+            role = "user",
+            content = listOf(textContent, imageContent)
         )
 
         return OpenAIVisionReq(
-                model = model,
-                messages = listOf(message)
+            model = model,
+            messages = listOf(message)
         )
     }
 
@@ -108,8 +108,8 @@ class OpenAIVisionServiceImpl(
      */
     private fun callVisionAPI(request: OpenAIVisionReq): OpenAIVisionRes {
         return openAIVisionFeignClient.generateVision(
-                "Bearer $apiKey",
-                request
+            "Bearer $apiKey",
+            request
         )
     }
 
@@ -139,7 +139,7 @@ class OpenAIVisionServiceImpl(
      * Vision 모델에 넘길 프롬프트
      */
     private fun buildVisionPrompt(): String =
-            """
+        """
         너는 한국 문화재 전문가이자 시각 분석 전문가야.
         내가 제공하는 이미지를 정밀하게 분석해서 아래 기준에 따라 한국어로 답변해줘.
 

@@ -13,10 +13,10 @@ class AppleOAuth2FeignConfig {
 
     @Bean
     fun requestOptions(): Request.Options =
-            Request.Options(
-                    10000, // connect timeout
-                    30000  // read timeout
-            )
+        Request.Options(
+            10000, // connect timeout
+            30000 // read timeout
+        )
 
     @Bean
     fun errorDecoder(): ErrorDecoder = AppleOAuth2ErrorDecoder()
@@ -28,8 +28,10 @@ class AppleOAuth2FeignConfig {
 
         override fun decode(methodKey: String, response: feign.Response): Exception {
             log.error(
-                    "Apple OAuth2 API 에러 - Method: {}, Status: {}, Reason: {}",
-                    methodKey, response.status(), response.reason()
+                "Apple OAuth2 API 에러 - Method: {}, Status: {}, Reason: {}",
+                methodKey,
+                response.status(),
+                response.reason()
             )
 
             /**

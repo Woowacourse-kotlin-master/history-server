@@ -1,9 +1,9 @@
 package historywowa.global.infra.exception.error
 
 enum class ErrorCode(
-        val code: Int,
-        val message: String,
-        val httpCode: Int
+    val code: Int,
+    val message: String,
+    val httpCode: Int
 ) {
 
     // Common

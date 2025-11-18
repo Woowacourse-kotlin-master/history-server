@@ -3,7 +3,6 @@ package historywowa.global.config
 import com.fasterxml.jackson.databind.ObjectMapper
 import historywowa.global.infra.exception.auth.HistoryAuthExceptionFilter
 import historywowa.global.infra.filter.HistoryJWTFilter
-
 import historywowa.global.jwt.util.JWTUtil
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,23 +20,23 @@ import org.springframework.web.filter.CorsFilter
 @Configuration
 @EnableWebSecurity(debug = false)
 class SecurityConfig(
-        private val jwtUtil: JWTUtil,
-        private val objectMapper: ObjectMapper
+    private val jwtUtil: JWTUtil,
+    private val objectMapper: ObjectMapper
 ) {
 
     private val excludedUrls = listOf(
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/favicon.ico",
-            "/api/app/reissue",
-            "/api/oauth2/login/**",
-            "/api/oauth2/callback/**",
-            "/api/healthcheck",
-            "/api/admin/**",
-            "/api/test/**",
-            "/actuator/**",
-            "/api/callback/**"
+        "/v3/api-docs/**",
+        "/swagger-ui/**",
+        "/swagger-ui.html",
+        "/favicon.ico",
+        "/api/app/reissue",
+        "/api/oauth2/login/**",
+        "/api/oauth2/callback/**",
+        "/api/healthcheck",
+        "/api/admin/**",
+        "/api/test/**",
+        "/actuator/**",
+        "/api/callback/**"
     )
 
     @Bean
@@ -45,7 +44,6 @@ class SecurityConfig(
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
-
         http.csrf { it.disable() }
         http.formLogin { it.disable() }
         http.httpBasic { it.disable() }
@@ -75,26 +73,26 @@ class SecurityConfig(
 
         http.authorizeHttpRequests { auth ->
             auth
-                    .requestMatchers("/api/healthcheck").permitAll()
-                    .requestMatchers("/api/oauth2/login/**").permitAll()
-                    .requestMatchers("/api/oauth2/callback/**", "/api/test/**", "/api/callback/**").permitAll()
-                    .requestMatchers("/api/admin/**").permitAll()
-                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                    .requestMatchers("/favicon.ico", "/api/region").permitAll()
-                    .requestMatchers("/api/app/reissue", "/api/web/reissue").permitAll()
-                    .requestMatchers("/actuator/**").permitAll()
-                    .requestMatchers("/api/app/public/**", "/api/web/public/**").permitAll()
-                    .anyRequest().authenticated()
+                .requestMatchers("/api/healthcheck").permitAll()
+                .requestMatchers("/api/oauth2/login/**").permitAll()
+                .requestMatchers("/api/oauth2/callback/**", "/api/test/**", "/api/callback/**").permitAll()
+                .requestMatchers("/api/admin/**").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/favicon.ico", "/api/region").permitAll()
+                .requestMatchers("/api/app/reissue", "/api/web/reissue").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/api/app/public/**", "/api/web/public/**").permitAll()
+                .anyRequest().authenticated()
         }
 
         http.addFilterAfter(
-                HistoryAuthExceptionFilter(objectMapper),
-                CorsFilter::class.java
+            HistoryAuthExceptionFilter(objectMapper),
+            CorsFilter::class.java
         )
 
         http.addFilterAfter(
-                HistoryJWTFilter(jwtUtil, excludedUrls),
-                UsernamePasswordAuthenticationFilter::class.java
+            HistoryJWTFilter(jwtUtil, excludedUrls),
+            UsernamePasswordAuthenticationFilter::class.java
         )
 
         return http.build()

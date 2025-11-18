@@ -7,14 +7,14 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @OpenAPIDefinition(
-        info = Info(
-                title = "역사길잡이 API 명세서",
-                description = "API 명세서",
-                version = "v1",
-                contact = Contact(
-                        name = "최승호",
-                        email = "chltmdgh517@naver.com"
-                )
+    info = Info(
+        title = "역사길잡이 API 명세서",
+        description = "API 명세서",
+        version = "v1",
+        contact = Contact(
+            name = "최승호",
+            email = "chltmdgh517@naver.com"
         )
+    )
 )
 class SwaggerConfig

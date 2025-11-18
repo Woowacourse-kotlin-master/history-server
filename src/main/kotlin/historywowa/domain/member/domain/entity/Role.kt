@@ -15,12 +15,12 @@ enum class Role(val key: String) {
         @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         fun from(key: String): Role {
             return entries.find { it.key.equals(key, ignoreCase = true) }
-                    ?: throw IllegalArgumentException("등급이 없네요.: $key")
+                ?: throw IllegalArgumentException("등급이 없네요.: $key")
         }
 
         fun getByValue(value: String): Role {
             return entries.find { it.key == value }
-                    ?: throw HistoryException(ErrorCode.INVALID_ROLE)
+                ?: throw HistoryException(ErrorCode.INVALID_ROLE)
         }
     }
 }
