@@ -1,3 +1,4 @@
+/*
 package historywowa.domain.openai.dto.text;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,4 +25,4 @@ public class OpenAITextRequest {
         private String role;
         private String content;
     }
-}
+}*/

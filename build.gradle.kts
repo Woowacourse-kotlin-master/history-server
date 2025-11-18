@@ -6,6 +6,7 @@ plugins {
 	kotlin("jvm") version "1.9.24"
 	kotlin("plugin.spring") version "1.9.24"
 	kotlin("plugin.jpa") version "1.9.24"
+	id("com.diffplug.spotless") version "6.25.0"
 }
 
 group = "historywowa"
@@ -72,10 +73,6 @@ dependencies {
 
 	// Database
 	runtimeOnly("com.mysql:mysql-connector-j")
-
-	// AMQP & Firebase
-	implementation("org.springframework.boot:spring-boot-starter-amqp")
-	implementation("com.google.firebase:firebase-admin:9.5.0")
 
 	// AWS S3
 	implementation("software.amazon.awssdk:s3:2.20.56")
