@@ -1,155 +1,166 @@
-package historywowa.domain.openai.application.service.impl;
+package historywowa.domain.openai.application.service.impl
 
-import historywowa.domain.openai.application.service.OpenAIVisionService;
-import historywowa.domain.openai.dto.image.req.OpenAIVisionReq;
-import historywowa.domain.openai.dto.image.res.OpenAIVisionRes;
-import historywowa.global.infra.exception.error.ErrorCode;
-import historywowa.global.infra.exception.error.HistoryException;
-import historywowa.global.infra.feignclient.openai.OpenAIVisionFeignClient;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Base64;
-import java.util.List;
+import historywowa.domain.openai.application.service.OpenAIVisionService
+import historywowa.domain.openai.dto.image.req.OpenAIVisionReq
+import historywowa.domain.openai.dto.image.res.OpenAIVisionRes
+import historywowa.global.infra.exception.error.ErrorCode
+import historywowa.global.infra.exception.error.HistoryException
+import historywowa.global.infra.feignclient.openai.OpenAIVisionFeignClient
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
+import java.io.ByteArrayOutputStream
+import java.net.URL
+import java.util.Base64
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
-public class OpenAIVisionServiceImpl implements OpenAIVisionService {
+class OpenAIVisionServiceImpl(
+        private val openAIVisionFeignClient: OpenAIVisionFeignClient
+) : OpenAIVisionService {
 
-    private final OpenAIVisionFeignClient openAIVisionFeignClient;
+    @Value("\${openai.api.key}")
+    private lateinit var apiKey: String
 
-    @Value("${openai.api.key}")
-    private String apiKey;
+    @Value("\${openai.text.model}")
+    private lateinit var model: String
 
-    @Value("${openai.text.model}")
-    private String model;
+    private val log = LoggerFactory.getLogger(javaClass)
 
-    @Override
-    public String analyzeHeritageImage(String imageUrl) {
-        try {
-            // 1) URL → Base64 Data URL 변환
-            String dataUrl = convertImageUrlToDataUrl(imageUrl);
+    override fun analyzeHeritageImage(imageUrl: String): String {
+        return try {
+            // 1) 이미지 URL -> Base64 Data URL 변환
+            val dataUrl = convertImageUrlToDataUrl(imageUrl)
 
             // 2) Vision 요청 생성
-            OpenAIVisionReq request = buildVisionRequest(dataUrl);
+            val request = buildVisionRequest(dataUrl)
 
-            // 3) API 호출
-            OpenAIVisionRes response = callVisionAPI(request);
+            // 3) OpenAI Vision API 호출
+            val response = callVisionAPI(request)
 
             // 4) 결과 텍스트 추출
-            return extractContent(response);
-
-        } catch (Exception e) {
-            log.error("문화재 이미지 분석 실패: {}", e.getMessage());
-            throw new HistoryException(ErrorCode.OPENAI_NOT_EXIST);
+            extractContent(response)
+        } catch (e: Exception) {
+            log.error("문화재 이미지 분석 실패: {}", e.message, e)
+            throw HistoryException(ErrorCode.OPENAI_NOT_EXIST)
         }
     }
 
     /**
-     * 이미지 URL을 실제로 다운로드한 후 Base64 data URL로 변환.
+     * 이미지 URL을 다운로드해서 Base64 data url 로 변환
      */
-    private String convertImageUrlToDataUrl(String imageUrl) {
-        try (InputStream in = new URL(imageUrl).openStream();
-             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+    private fun convertImageUrlToDataUrl(imageUrl: String): String {
+        return try {
+            URL(imageUrl).openStream().use { inputStream ->
+                ByteArrayOutputStream().use { baos ->
+                    val buffer = ByteArray(8_192)
+                    while (true) {
+                        val read = inputStream.read(buffer)
+                        if (read == -1) break
+                        baos.write(buffer, 0, read)
+                    }
 
-            byte[] buffer = new byte[8192];
-            int bytesRead;
+                    val imageBytes = baos.toByteArray()
+                    val base64 = Base64.getEncoder().encodeToString(imageBytes)
 
-            while ((bytesRead = in.read(buffer)) != -1) {
-                baos.write(buffer, 0, bytesRead);
+                    // 여기 MIME 타입은 필요하면 이미지 헤더 보고 바꾸면 됨 (jpeg, png 등)
+                    "data:image/jpeg;base64,$base64"
+                }
             }
-
-            byte[] imageBytes = baos.toByteArray();
-            String base64 = Base64.getEncoder().encodeToString(imageBytes);
-
-
-            return "data:image/jpeg;base64," + base64;
-
-        } catch (Exception e) {
-            throw new HistoryException(ErrorCode.OPENAI_NOT_EXIST);
+        } catch (e: Exception) {
+            log.error("이미지 다운로드/인코딩 실패: {}", e.message, e)
+            throw HistoryException(ErrorCode.OPENAI_NOT_EXIST)
         }
     }
 
-    private OpenAIVisionReq buildVisionRequest(String base64Data) {
-        String prompt = buildVisionPrompt();
+    /**
+     * Vision용 요청 DTO 생성
+     */
+    private fun buildVisionRequest(base64Data: String): OpenAIVisionReq {
+        val prompt = buildVisionPrompt()
 
-        var textContent = new OpenAIVisionReq.TextContent(
-                "text",
-                prompt
-        );
+        val textContent = OpenAIVisionReq.TextContent(
+                type = "text",
+                text = prompt
+        )
 
-        var imageContent = new OpenAIVisionReq.ImageContent(
-                "image_url",
-                new OpenAIVisionReq.ImageUrl(base64Data)
-        );
+        val imageUrl = OpenAIVisionReq.ImageUrl(
+                url = base64Data
+        )
 
-        var message = new OpenAIVisionReq.Message(
-                "user",
-                List.of(textContent, imageContent)
-        );
+        val imageContent = OpenAIVisionReq.ImageContent(
+                type = "image_url",
+                image_url = imageUrl
+        )
 
-        var req = new OpenAIVisionReq(
-                model,
-                List.of(message)
-        );
+        val message = OpenAIVisionReq.Message(
+                role = "user",
+                content = listOf(textContent, imageContent)
+        )
 
-
-        return new OpenAIVisionReq(
-                model,
-                List.of(
-                        new OpenAIVisionReq.Message(
-                                "user",
-                                List.of(textContent, imageContent)
-                        )
-                )
-        );
+        return OpenAIVisionReq(
+                model = model,
+                messages = listOf(message)
+        )
     }
 
-    private OpenAIVisionRes callVisionAPI(OpenAIVisionReq request) {
+    /**
+     * FeignClient를 통해 OpenAI Vision API 호출
+     */
+    private fun callVisionAPI(request: OpenAIVisionReq): OpenAIVisionRes {
         return openAIVisionFeignClient.generateVision(
-                "Bearer " + apiKey,
+                "Bearer $apiKey",
                 request
-        );
+        )
     }
 
-    private String extractContent(OpenAIVisionRes response) {
-        if (response.choices() == null || response.choices().isEmpty()) {
-            throw new HistoryException(ErrorCode.OPENAI_NOT_EXIST);
+    /**
+     * 응답에서 결과 텍스트(content) 추출
+     */
+    private fun extractContent(response: OpenAIVisionRes): String {
+        // Kotlin data class는 프로퍼티로 접근 (choices(), message() 같은 함수 호출 X)
+        val choices = response.choices
+
+        if (choices.isEmpty()) {
+            throw HistoryException(ErrorCode.OPENAI_NOT_EXIST)
         }
-        return response.choices().get(0).message().content();
+
+        val firstChoice = choices[0]
+        val message = firstChoice.message
+        val content = message.content
+
+        if (content.isBlank()) {
+            throw HistoryException(ErrorCode.OPENAI_NOT_EXIST)
+        }
+
+        return content
     }
 
-    private String buildVisionPrompt() {
-        return """
-            너는 한국 문화재 전문가이자 시각 분석 전문가야.
-            내가 제공하는 이미지를 정밀하게 분석해서 아래 기준에 따라 한국어로 답변해줘.
+    /**
+     * Vision 모델에 넘길 프롬프트
+     */
+    private fun buildVisionPrompt(): String =
+            """
+        너는 한국 문화재 전문가이자 시각 분석 전문가야.
+        내가 제공하는 이미지를 정밀하게 분석해서 아래 기준에 따라 한국어로 답변해줘.
 
-            [주의]
-            - 이미지를 분석했을 때 한국 문화재로 보이지 않으면 "이 이미지는 한국 문화재로 추정되지 않습니다."라고 명확하게 말해줘.
-            - 사물, 음식, 인물, 동물, 풍경 등 문화재와 무관한 사진이면 절대로 문화재라고 추정하지 마.
-            - 비슷한 외형이 있어도 근거가 없으면 문화재로 단정하지 말고 "확신할 수 없음"과 이유를 반드시 설명해.
+        [주의]
+        - 이미지를 분석했을 때 한국 문화재로 보이지 않으면 "이 이미지는 한국 문화재로 추정되지 않습니다."라고 명확하게 말해줘.
+        - 사물, 음식, 인물, 동물, 풍경 등 문화재와 무관한 사진이면 절대로 문화재라고 추정하지 마.
+        - 비슷한 외형이 있어도 근거가 없으면 문화재로 단정하지 말고 "확신할 수 없음"과 이유를 반드시 설명해.
 
-            [분석 기준]
-            1) 어떤 문화재인지 추정할 수 있는 고유 특징 설명
-            2) 형태, 재질, 구조, 색상 등 시각적 단서 분석
-            3) 한국 문화재 명칭(정확한 공식 명칭 추정)
-            4) 해당 문화재가 속하는 시대/지역/종류(사찰/탑/부도/불상 등) 분석
-            5) 추가로 추정 가능한 역사적 맥락 또는 의미 설명
+        [분석 기준]
+        1) 어떤 문화재인지 추정할 수 있는 고유 특징 설명
+        2) 형태, 재질, 구조, 색상 등 시각적 단서 분석
+        3) 한국 문화재 명칭(정확한 공식 명칭 추정)
+        4) 해당 문화재가 속하는 시대/지역/종류(사찰/탑/부도/불상 등) 분석
+        5) 추가로 추정 가능한 역사적 맥락 또는 의미 설명
 
-            [출력 형식]
-            - 자연어 문장으로 자세하게 설명
-            - 불필요한 말투·중복 제거
-            - "확실하지 않은 경우"는 그 이유를 함께 설명
-            - 문화재가 아닐 경우에도 정중하게 이유와 함께 설명
+        [출력 형식]
+        - 자연어 문장으로 자세하게 설명
+        - 불필요한 말투·중복 제거
+        - "확실하지 않은 경우"는 그 이유를 함께 설명
+        - 문화재가 아닐 경우에도 정중하게 이유와 함께 설명
 
-            이미지를 기반으로 문화재를 최대한 정확하고 신중하게 판단해줘.
-            """;
-    }
-
+        이미지를 기반으로 문화재를 최대한 정확하고 신중하게 판단해줘.
+        """.trimIndent()
 }

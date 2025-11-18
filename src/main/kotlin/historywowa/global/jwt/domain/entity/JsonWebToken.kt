@@ -1,22 +1,32 @@
-package historywowa.global.jwt.domain.entity;
+package historywowa.global.jwt.domain.entity
 
-import historywowa.domain.member.domain.entity.Role;
-import lombok.Builder;
-import lombok.Getter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.redis.core.RedisHash;
+import historywowa.domain.member.domain.entity.Role
+import org.springframework.data.annotation.Id
+import org.springframework.data.redis.core.RedisHash
 
 @RedisHash(value = "JsonWebToken", timeToLive = 1209600)
-@Builder
-@Getter
-public class JsonWebToken {
-    @Id
-    private String refreshToken;
+data class JsonWebToken(
 
-    private String providerId;
+        @Id
+        val refreshToken: String,
 
-    private String email;
+        val providerId: String,
 
-    private Role role;
+        val email: String,
 
+        val role: Role
+) {
+    companion object {
+        fun of(
+                refreshToken: String,
+                providerId: String,
+                email: String,
+                role: Role
+        ): JsonWebToken = JsonWebToken(
+                refreshToken = refreshToken,
+                providerId = providerId,
+                email = email,
+                role = role
+        )
+    }
 }

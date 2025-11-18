@@ -1,129 +1,121 @@
-package historywowa.domain.oauth2.application.service.impl.oauth;
+package historywowa.domain.oauth2.application.service.impl.oauth
 
-import historywowa.domain.oauth2.application.service.OAuth2Service;
-import historywowa.domain.oauth2.domain.entity.SocialProvider;
-import historywowa.domain.oauth2.presentation.dto.req.SocialTokenRequest;
-import historywowa.domain.oauth2.presentation.dto.res.naver.NaverTokenResponse;
-import historywowa.domain.oauth2.presentation.dto.res.naver.NaverUserResponse;
-import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoTokenResponse;
-import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoUserResponse;
-import historywowa.global.infra.exception.error.HistoryException;
-import historywowa.global.infra.exception.error.ErrorCode;
-import historywowa.global.infra.feignclient.naver.NaverOAuth2URLFeignClient;
-import historywowa.global.infra.feignclient.naver.NaverOAuth2UserFeignClient;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+import historywowa.domain.oauth2.application.service.OAuth2Service
+import historywowa.domain.oauth2.domain.entity.SocialProvider
+import historywowa.domain.oauth2.presentation.dto.req.SocialTokenRequest
+import historywowa.domain.oauth2.presentation.dto.res.naver.NaverTokenResponse
+import historywowa.domain.oauth2.presentation.dto.res.naver.NaverUserResponse
+import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoTokenResponse
+import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoUserResponse
+import historywowa.global.infra.exception.error.ErrorCode
+import historywowa.global.infra.exception.error.HistoryException
+import historywowa.global.infra.feignclient.naver.NaverOAuth2URLFeignClient
+import historywowa.global.infra.feignclient.naver.NaverOAuth2UserFeignClient
+import jakarta.transaction.Transactional
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 @Service
 @Transactional
-@RequiredArgsConstructor
-@Slf4j
-public class NaverOAuth2ServiceImpl implements OAuth2Service {
-    private final NaverOAuth2URLFeignClient naverOAuth2URLFeignClient;
-    private final NaverOAuth2UserFeignClient naverOAuth2UserFeignClient;
+class NaverOAuth2ServiceImpl(
+        private val naverOAuth2URLFeignClient: NaverOAuth2URLFeignClient,
+        private val naverOAuth2UserFeignClient: NaverOAuth2UserFeignClient,
 
-    @Value("${oauth2.naver.client-id}")
-    private String clientId;
+        @Value("\${oauth2.naver.client-id}")
+        private val clientId: String,
 
-    @Value("${oauth2.naver.client-secret}")
-    private String clientSecret;
+        @Value("\${oauth2.naver.client-secret}")
+        private val clientSecret: String,
 
-    @Value("${oauth2.naver.redirect-uri}")
-    private String redirectUri;
+        @Value("\${oauth2.naver.redirect-uri}")
+        private val redirectUri: String,
 
-    @Value("${oauth2.naver.base-url}")
-    private String baseUrl;
+        @Value("\${oauth2.naver.base-url}")
+        private val baseUrl: String,
+) : OAuth2Service {
 
-    @Override
-    public String getLoginUrl() {
-        String state = generateState();
-        return baseUrl +
-                "?response_type=code" +
-                "&client_id=" + clientId +
+    override fun getLoginUrl(): String {
+        val state = generateState()
+
+        return "$baseUrl?response_type=code" +
+                "&client_id=$clientId" +
                 "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
-                "&state=" + state;
+                "&state=$state"
     }
 
-    @Override
-    public KakaoTokenResponse getTokens(String code) {
-        NaverTokenResponse naverResponse = naverOAuth2URLFeignClient.getAccessToken(
-                "authorization_code", clientId, clientSecret, redirectUri, code, "state_value"
-        );
+    override fun getTokens(code: String): KakaoTokenResponse {
+        val response: NaverTokenResponse = naverOAuth2URLFeignClient.getAccessToken(
+                "authorization_code",
+                clientId,
+                clientSecret,
+                redirectUri,
+                code,
+                "state_value"
+        )
 
-        return new KakaoTokenResponse(
-                naverResponse.accessToken(),
-                naverResponse.refreshToken(),
-                "idnull",
-                naverResponse.expiresIn()
-        );
+        return KakaoTokenResponse(
+                accessToken = response.accessToken,
+                refreshToken = response.refreshToken,
+                idToken = "idnull",
+                expiresIn = response.expiresIn?.toLong()
+        )
     }
 
-    @Override
-    public KakaoTokenResponse refreshTokens(String refreshToken) {
-        NaverTokenResponse naverResponse = naverOAuth2URLFeignClient.refreshToken(
-                "refresh_token", clientId, clientSecret, refreshToken
-        );
+    override fun refreshTokens(refreshToken: String): KakaoTokenResponse {
+        val response: NaverTokenResponse = naverOAuth2URLFeignClient.refreshToken(
+                "refresh_token",
+                clientId,
+                clientSecret,
+                refreshToken
+        )
 
-        return new KakaoTokenResponse(
-                naverResponse.accessToken(),
-                naverResponse.refreshToken(),
-                "idnull",
-                naverResponse.expiresIn()
-        );
+        return KakaoTokenResponse(
+                accessToken = response.accessToken,
+                refreshToken = response.refreshToken,
+                idToken = "idnull",
+                expiresIn = response.expiresIn?.toLong()
+        )
     }
 
-    @Override
-    public KakaoUserResponse getUserInfo(String accessToken) {
-        try {
-            NaverUserResponse naverUser = naverOAuth2UserFeignClient.getUserInfo("Bearer " + accessToken);
-            return naverUser.toOAuth2UserResponse();
-        } catch (Exception e) {
-            log.error("네이버 사용자 정보 조회 실패: {}", e.getMessage());
-            throw new HistoryException(ErrorCode.INVALID_PROVIDER);
+    override fun getUserInfo(accessToken: String): KakaoUserResponse {
+        TODO("Not yet implemented")
+    }
+
+    /*override fun getUserInfo(accessToken: String): KakaoUserResponse {
+        return try {
+            naverOAuth2UserFeignClient.getUserInfo("Bearer $accessToken")
+        } catch (e: Exception) {
+            log.error("카카오 사용자 정보 조회 실패: {}", e.message)
+            throw HistoryException(ErrorCode.INVALID_PROVIDER)
+        }
+    }*/
+
+    override fun getUserInfoFromIdToken(idToken: String): KakaoUserResponse {
+        throw UnsupportedOperationException("네이버는 ID Token을 지원하지 않습니다")
+    }
+
+    override fun validateToken(accessToken: String): Boolean {
+        return try {
+            val userInfo = getUserInfo(accessToken)
+            userInfo.id != null
+        } catch (e: Exception) {
+            false
         }
     }
 
-    @Override
-    public KakaoUserResponse getUserInfoFromIdToken(String idToken) {
-        // 네이버는 ID Token을 사용하지 않으므로 지원하지 않음
-        throw new UnsupportedOperationException("네이버는 ID Token을 지원하지 않습니다");
+    override fun convertToTokenResponse(tokenRequest: SocialTokenRequest): KakaoTokenResponse {
+        return KakaoTokenResponse(
+                accessToken = tokenRequest.accessToken,
+                refreshToken = tokenRequest.refreshToken,
+                idToken = "idnull",
+                expiresIn = tokenRequest.expiresIn
+        )
     }
 
-    @Override
-    public boolean validateToken(String accessToken) {
-        try {
-            // 사용자 정보 조회를 통해 토큰 유효성 검증
-            KakaoUserResponse userInfo = getUserInfo(accessToken);
-            return userInfo != null && userInfo.id() != null;
-        } catch (Exception e) {
-            log.error("네이버 토큰 검증 실패: {}", e.getMessage());
-            return false;
-        }
-    }
+    override fun getProvider(): SocialProvider = SocialProvider.NAVER
 
-    @Override
-    public KakaoTokenResponse convertToTokenResponse(SocialTokenRequest tokenRequest) {
-        return new KakaoTokenResponse(
-                tokenRequest.accessToken(),
-                tokenRequest.refreshToken(),
-                "idnull",
-                tokenRequest.expiresIn()
-        );
-    }
-
-    @Override
-    public SocialProvider getProvider() {
-        return SocialProvider.NAVER;
-    }
-
-    private String generateState() {
-        return UUID.randomUUID().toString();
-    }
+    private fun generateState(): String = UUID.randomUUID().toString()
 }

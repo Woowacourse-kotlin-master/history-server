@@ -1,53 +1,48 @@
-package historywowa.domain.point.application.impl;
+package historywowa.domain.point.application.impl
 
-import static historywowa.global.infra.exception.error.ErrorCode.*;
+import historywowa.domain.member.domain.entity.Member
+import historywowa.domain.member.domain.repository.MemberRepository
+import historywowa.domain.point.application.PointService
 
-import historywowa.domain.member.domain.entity.Member;
-import historywowa.domain.member.domain.repository.MemberRepository;
-import historywowa.domain.point.application.PointService;
-import historywowa.domain.point.domain.entity.*;
-import historywowa.domain.point.domain.entity.type.*;
-import historywowa.domain.point.domain.repository.*;
-import historywowa.domain.point.presentation.dto.req.*;
-import historywowa.domain.point.presentation.dto.res.*;
-import historywowa.global.infra.exception.error.ErrorCode;
-import historywowa.global.infra.exception.error.HistoryException;
-import jakarta.transaction.Transactional;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
+import historywowa.domain.point.domain.entity.Point
+import historywowa.domain.point.domain.repository.PointRepository
+import historywowa.domain.point.presentation.dto.res.GetPointRes
+import historywowa.global.infra.exception.error.ErrorCode
+import historywowa.global.infra.exception.error.HistoryException
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
-@RequiredArgsConstructor
 @Transactional
-@Slf4j
-public class PointServiceImpl implements PointService {
+class PointServiceImpl(
+        private val pointRepository: PointRepository,
+        private val memberRepository: MemberRepository
+) : PointService {
 
-    private final PointRepository pointRepository;
-    private final MemberRepository memberRepository;
+    private val log = LoggerFactory.getLogger(javaClass)
 
-    @Override
-    public void usePointForHeritage(Member member) {
-        Point point = getPointByMember(member);
-        point.minusBalance();
+    override fun usePointForHeritage(member: Member) {
+        val point = getPointByMember(member)
+        point.minusBalance()
     }
 
-    @Override
-    public GetPointRes getMemberPoint(String userId){
-        Member findMember = getMemberOrThrow(userId);
-        Point pointByMember = getPointByMember(findMember);
-        return GetPointRes.of(pointByMember.getBalance(), findMember.getProfile());
+    override fun getMemberPoint(userId: String): GetPointRes {
+        val findMember = getMemberOrThrow(userId)
+        val pointByMember = getPointByMember(findMember)
+        val profile = findMember.profile
+        if(profile !=null) return GetPointRes.of(pointByMember.balance, profile)
+
+        return GetPointRes.of(pointByMember.balance, "test")
     }
 
-    private Point getPointByMember(Member member) {
+    private fun getPointByMember(member: Member): Point {
         return pointRepository.findByMember(member)
-                .orElseThrow(() -> new HistoryException(POINT_NOT_EXIST));
+                .orElseThrow { HistoryException(ErrorCode.POINT_NOT_EXIST) }
     }
 
-    private Member getMemberOrThrow(String userId) {
+    private fun getMemberOrThrow(userId: String): Member {
         return memberRepository.findById(userId)
-                .orElseThrow(() -> new HistoryException(ErrorCode.USER_NOT_EXIST));
+                .orElseThrow { HistoryException(ErrorCode.USER_NOT_EXIST) }
     }
 }

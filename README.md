@@ -1,4 +1,4 @@
-# 🧾 Commit Convention (AngularJS Style)
+# Commit Convention (AngularJS Style)
 
 | Type | Description |
 |------|--------------|

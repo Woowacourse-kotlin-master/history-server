@@ -1,28 +1,28 @@
-package historywowa.domain.oauth2.application.service;
+package historywowa.domain.oauth2.application.service
 
-import historywowa.domain.oauth2.domain.entity.SocialProvider;
-import historywowa.domain.oauth2.presentation.dto.req.SocialTokenRequest;
-import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoTokenResponse;
-import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoUserResponse;
+import historywowa.domain.oauth2.domain.entity.SocialProvider
+import historywowa.domain.oauth2.presentation.dto.req.SocialTokenRequest
+import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoTokenResponse
+import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoUserResponse
 
-public interface OAuth2Service {
+interface OAuth2Service {
 
-    // 기존 Authorization Code Flow 방식 (테스트용)
-    String getLoginUrl();
-    KakaoTokenResponse getTokens(String code);
-    KakaoTokenResponse refreshTokens(String refreshToken);
+    // 기존 Authorization Code Flow 방식
+    fun getLoginUrl(): String
+    fun getTokens(code: String): KakaoTokenResponse
+    fun refreshTokens(refreshToken: String): KakaoTokenResponse
 
-    // 새로운 방식: 토큰으로 사용자 정보 조회
-    KakaoUserResponse getUserInfo(String accessToken);
+    // Access Token → 사용자 정보 조회
+    fun getUserInfo(accessToken: String): KakaoUserResponse
 
-    // Apple의 경우 ID Token으로 사용자 정보 조회
-    KakaoUserResponse getUserInfoFromIdToken(String idToken);
+    // Apple: ID Token 기반 사용자 정보 조회
+    fun getUserInfoFromIdToken(idToken: String): KakaoUserResponse
 
-    // 토큰 검증 (소셜 플랫폼에서 토큰이 유효한지 확인)
-    boolean validateToken(String accessToken);
+    // 토큰 검증
+    fun validateToken(accessToken: String): Boolean
 
-    // 토큰을 KakaoTokenResponse 형태로 변환
-    KakaoTokenResponse convertToTokenResponse(SocialTokenRequest tokenRequest);
+    // SocialTokenRequest → KakaoTokenResponse 변환
+    fun convertToTokenResponse(tokenRequest: SocialTokenRequest): KakaoTokenResponse
 
-    SocialProvider getProvider();
+    fun getProvider(): SocialProvider
 }

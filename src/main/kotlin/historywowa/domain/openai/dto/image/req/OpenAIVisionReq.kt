@@ -1,30 +1,28 @@
-package historywowa.domain.openai.dto.image.req;
+package historywowa.domain.openai.dto.image.req
 
-import java.util.List;
-public record OpenAIVisionReq(
-        String model,
-        List<Message> messages
+data class OpenAIVisionReq(
+        val model: String,
+        val messages: List<Message>
 ) {
+    data class Message(
+            val role: String,
+            val content: List<Content>
+    )
 
-    public record Message(
-            String role,
-            List<Content> content
-    ) {}
+    sealed interface Content
 
-    public sealed interface Content
-            permits TextContent, ImageContent {}
+    data class TextContent(
+            val type: String,
+            val text: String
+    ) : Content
 
-    public record TextContent(
-            String type,
-            String text
-    ) implements Content {}
+    data class ImageContent(
+            val type: String,
+            val image_url: ImageUrl
+    ) : Content
 
-    public record ImageContent(
-            String type,
-            ImageUrl image_url
-    ) implements Content {}
-
-    public record ImageUrl(
-            String url
-    ) {}
+    data class ImageUrl(
+            val url: String
+    )
 }
+

@@ -1,5 +1,5 @@
-package historywowa.domain.oauth2.application.service;
+package historywowa.domain.oauth2.application.service
 
-public interface LogoutService {
-    void logout(String userId, String refreshToken);
+interface LogoutService {
+    fun logout(userId: String, refreshToken: String)
 }

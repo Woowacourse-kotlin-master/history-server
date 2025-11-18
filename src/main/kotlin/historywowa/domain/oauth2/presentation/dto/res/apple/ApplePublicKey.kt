@@ -1,11 +1,10 @@
-package historywowa.domain.oauth2.presentation.dto.res.apple;
+package historywowa.domain.oauth2.presentation.dto.res.apple
 
-public record ApplePublicKey(
-        String kty,
-        String kid,
-        String use,
-        String alg,
-        String n,
-        String e
-) {
-}
+data class ApplePublicKey(
+        val kty: String,
+        val kid: String,
+        val use: String,
+        val alg: String,
+        val n: String,
+        val e: String
+)

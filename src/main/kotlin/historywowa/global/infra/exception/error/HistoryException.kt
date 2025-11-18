@@ -1,39 +1,20 @@
-package historywowa.global.infra.exception.error;
+package historywowa.global.infra.exception.error
 
+class HistoryException(
+        val errorCode: ErrorCode,
+        message: String = errorCode.message,
+        cause: Throwable? = null
+) : RuntimeException(message, cause) {
 
-public class HistoryException extends RuntimeException {
+    constructor(errorCode: ErrorCode) :
+            this(errorCode, errorCode.message, null)
 
-    private final ErrorCode errorCode;
+    constructor(errorCode: ErrorCode, detailMessage: String) :
+            this(errorCode, "${errorCode.message} → $detailMessage", null)
 
-    public HistoryException(
-        ErrorCode errorCode
-    ) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
-    }
+    constructor(errorCode: ErrorCode, cause: Throwable) :
+            this(errorCode, errorCode.message, cause)
 
-    public HistoryException(
-        ErrorCode errorCode,
-        String detailMessage
-    ) {
-        super(errorCode.getMessage() + " → " + detailMessage);
-        this.errorCode = errorCode;
-    }
-
-
-    public HistoryException(
-        ErrorCode errorCode,
-        Throwable cause
-    ) {
-        super(errorCode.getMessage(), cause);
-        this.errorCode = errorCode;
-    }
-
-    public ErrorCode getErrorCode() {
-        return errorCode;
-    }
-
-    public int getHttpStatusCode() {
-        return errorCode.getHttpCode();
-    }
+    val httpStatusCode: Int
+        get() = errorCode.httpCode
 }

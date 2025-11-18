@@ -1,7 +1,7 @@
-package historywowa.domain.oauth2.application.service;
+package historywowa.domain.oauth2.application.service
 
-import historywowa.domain.oauth2.presentation.dto.res.LoginToken;
+import historywowa.domain.oauth2.presentation.dto.res.LoginToken
 
-public interface ReissueService {
-    LoginToken reissue(String refreshToken);
+interface ReissueService {
+    fun reissue(refreshToken: String): LoginToken
 }

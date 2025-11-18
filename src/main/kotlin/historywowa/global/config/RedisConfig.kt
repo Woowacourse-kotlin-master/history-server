@@ -1,44 +1,45 @@
-package historywowa.global.config;
+package historywowa.global.config
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.data.redis.connection.RedisConnectionFactory
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories
+import org.springframework.data.redis.serializer.StringRedisSerializer
 
-@EnableRedisRepositories
 @Configuration
-public class RedisConfig {
+@EnableRedisRepositories
+class RedisConfig(
 
-    @Value("${spring.redis.host}")
-    private String host;
+        @Value("\${spring.redis.host}")
+        private val host: String,
 
-    @Value("${spring.redis.port}")
-    private int port;
+        @Value("\${spring.redis.port}")
+        private val port: Int,
 
-    @Value("${spring.redis.password}")
-    private String password;
-
+        @Value("\${spring.redis.password}")
+        private val password: String
+) {
 
     @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName(host);
-        config.setPort(port);
-        config.setPassword(password);
-        return new LettuceConnectionFactory(config);
+    fun redisConnectionFactory(): RedisConnectionFactory {
+        val config = RedisStandaloneConfiguration().apply {
+            hostName = host
+            this.port = this@RedisConfig.port
+            setPassword(password)
+        }
+        return LettuceConnectionFactory(config)
     }
 
     @Bean
-    public RedisTemplate<?, ?> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<byte[], byte[]> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory);
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setValueSerializer(new StringRedisSerializer());
-        return template;
+    fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, String> {
+        return RedisTemplate<String, String>().apply {
+            setConnectionFactory(connectionFactory)
+            keySerializer = StringRedisSerializer()
+            valueSerializer = StringRedisSerializer()
+        }
     }
 }

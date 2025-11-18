@@ -1,16 +1,14 @@
-package historywowa.domain.openai.dto.image.res;
+package historywowa.domain.openai.dto.image.res
 
-import java.util.List;
-
-public record OpenAIVisionRes(
-        List<Choice> choices
+data class OpenAIVisionRes(
+        val choices: List<Choice>
 ) {
-    public static record Choice(
-            Message message
-    ) {}
+    data class Choice(
+            val message: Message
+    )
 
-    public static record Message(
-            String role,
-            String content
-    ) {}
+    data class Message(
+            val role: String,
+            val content: String
+    )
 }

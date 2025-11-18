@@ -1,54 +1,47 @@
-package historywowa.global.infra.feignclient.ios;
+package historywowa.global.infra.feignclient.ios
 
-import feign.Logger;
-import feign.Request;
-import feign.codec.ErrorDecoder;
-import historywowa.global.infra.exception.error.ErrorCode;
-import historywowa.global.infra.exception.error.HistoryException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import feign.Logger
+import feign.Request
+import feign.codec.ErrorDecoder
+import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Bean
 
-//@Configuration
-@Slf4j
-public class AppleOAuth2FeignConfig {
+class AppleOAuth2FeignConfig {
 
     @Bean
-    public Logger.Level feignLoggerLevel() {
-        return Logger.Level.FULL;
-    }
+    fun feignLoggerLevel(): Logger.Level = Logger.Level.FULL
 
     @Bean
-    public Request.Options requestOptions() {
-        return new Request.Options(
-                10000,  // 연결 타임아웃 (밀리초)
-                30000   // 읽기 타임아웃 (밀리초)
-        );
-    }
+    fun requestOptions(): Request.Options =
+            Request.Options(
+                    10000, // connect timeout
+                    30000  // read timeout
+            )
 
     @Bean
-    public ErrorDecoder errorDecoder() {
-        return new AppleOAuth2ErrorDecoder();
-    }
+    fun errorDecoder(): ErrorDecoder = AppleOAuth2ErrorDecoder()
 
-    @Slf4j
-    public static class AppleOAuth2ErrorDecoder implements ErrorDecoder {
-        private final ErrorDecoder defaultErrorDecoder = new Default();
+    class AppleOAuth2ErrorDecoder : ErrorDecoder {
 
-        @Override
-        public Exception decode(String methodKey, feign.Response response) {
-            log.error("Apple OAuth2 API 에러 - Method: {}, Status: {}, Reason: {}",
-                    methodKey, response.status(), response.reason());
+        private val log = LoggerFactory.getLogger(AppleOAuth2ErrorDecoder::class.java)
+        private val defaultDecoder = ErrorDecoder.Default()
 
-/*            if (response.status() == 400) {
-                throw new HistoryException(ErrorCode.APPLE_JWT_ERROR);
-            } else if (response.status() == 401) {
-                throw new HistoryException(ErrorCode.APPLE_JWT_ERROR);
-            } else if (response.status() >= 500) {
-                throw new HistoryException(ErrorCode.APPLE_JWT_ERROR);
-            }*/
+        override fun decode(methodKey: String, response: feign.Response): Exception {
+            log.error(
+                    "Apple OAuth2 API 에러 - Method: {}, Status: {}, Reason: {}",
+                    methodKey, response.status(), response.reason()
+            )
 
-            return defaultErrorDecoder.decode(methodKey, response);
+            /**
+             * 필요하면 HistoryException으로 직접 감싸는 로직 활성화 가능
+             *
+             * when (response.status()) {
+             *     400, 401 -> throw HistoryException(ErrorCode.APPLE_JWT_ERROR)
+             *     in 500..599 -> throw HistoryException(ErrorCode.APPLE_JWT_ERROR)
+             * }
+             */
+
+            return defaultDecoder.decode(methodKey, response)
         }
     }
 }

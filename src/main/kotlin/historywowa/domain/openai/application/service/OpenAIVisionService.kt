@@ -1,5 +1,5 @@
-package historywowa.domain.openai.application.service;
+package historywowa.domain.openai.application.service
 
-public interface OpenAIVisionService {
-    String analyzeHeritageImage(String imageUrl);
+interface OpenAIVisionService {
+    fun analyzeHeritageImage(imageUrl: String): String
 }

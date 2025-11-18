@@ -1,19 +1,16 @@
-package historywowa.global.infra.s3.presentation.application;
+package historywowa.global.infra.s3.presentation.application
 
+import org.springframework.web.multipart.MultipartFile
 
-import java.io.IOException;
-import org.springframework.web.multipart.MultipartFile;
+interface S3Service {
 
-public interface S3Service {
+    // 프로필 이미지 업로드
+    fun storeImage(multipartFile: MultipartFile, userId: String): String?
 
-    // 프로필 바꾸기
-    String storeImage(MultipartFile multipartFile, String userId) throws IOException;
-
-    // 정적 지도 화면 이미지 저장
-    String storeStaticMapImage(
-        String key,
-        byte[] bytes,
-        String contentType
-    );
-
+    // 정적 지도 이미지 저장
+    fun storeStaticMapImage(
+            key: String,
+            bytes: ByteArray,
+            contentType: String
+    ): String
 }

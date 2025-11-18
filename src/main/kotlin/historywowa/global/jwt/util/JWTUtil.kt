@@ -1,119 +1,122 @@
-package historywowa.global.jwt.util;
+package historywowa.global.jwt.util
 
-import historywowa.domain.member.domain.entity.Role;
-import historywowa.global.infra.exception.error.HistoryException;
-import historywowa.global.infra.exception.error.ErrorCode;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Component;
+import historywowa.domain.member.domain.entity.Role
+import historywowa.global.infra.exception.error.ErrorCode
+import historywowa.global.infra.exception.error.HistoryException
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.JwtException
+import io.jsonwebtoken.Jwts
+import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletRequest
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
+import org.springframework.stereotype.Component
+import java.nio.charset.StandardCharsets
+import java.util.Date
+import javax.crypto.SecretKey
+import javax.crypto.spec.SecretKeySpec
 
 @Component
-@Slf4j
-public class JWTUtil {
+class JWTUtil(
 
-    private final SecretKey secretKey;
+        @Value("\${jwt.secret}")
+        secret: String,
 
-    @Value("${jwt.access-expiration}")
-    private Long accessExpiration;
+        @Value("\${jwt.access-expiration}")
+        private val accessExpiration: Long,
 
-    @Value("${jwt.refresh-expiration}")
-    private Long refreshExpiration;
+        @Value("\${jwt.refresh-expiration}")
+        private val refreshExpiration: Long,
+) {
 
-    public JWTUtil(@Value("${jwt.secret}") String secret) {
-        this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
-    }
+    private val log = LoggerFactory.getLogger(javaClass)
 
-    public String getId(String token) {
-        try {
-            return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("id", String.class);
-        } catch (ExpiredJwtException e) {
-            throw new HistoryException(ErrorCode.JWT_EXPIRE_TOKEN);
-        } catch (JwtException e) {
-            throw new HistoryException(ErrorCode.JWT_ERROR_TOKEN);
+    private val secretKey: SecretKey =
+            SecretKeySpec(
+                    secret.toByteArray(StandardCharsets.UTF_8),
+                    Jwts.SIG.HS256.key().build().algorithm
+            )
+
+    fun getId(token: String): String {
+        return try {
+            val claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .payload
+
+            claims.get("id", String::class.java)
+        } catch (e: ExpiredJwtException) {
+            throw HistoryException(ErrorCode.JWT_EXPIRE_TOKEN)
+        } catch (e: JwtException) {
+            throw HistoryException(ErrorCode.JWT_ERROR_TOKEN)
         }
     }
 
-    public Role getRole(String token) {
-        try {
-            return Role.getByValue(
-                "ROLE_" + Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class));
-        } catch (ExpiredJwtException e) {
-            throw new HistoryException(ErrorCode.JWT_EXPIRE_TOKEN);
-        } catch (JwtException e) {
-            throw new HistoryException(ErrorCode.JWT_ERROR_TOKEN);
+    fun getRole(token: String): Role {
+        return try {
+            val claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .payload
+
+            val value = claims.get("role", String::class.java)
+            Role.getByValue("ROLE_$value")
+        } catch (e: ExpiredJwtException) {
+            throw HistoryException(ErrorCode.JWT_EXPIRE_TOKEN)
+        } catch (e: JwtException) {
+            throw HistoryException(ErrorCode.JWT_ERROR_TOKEN)
         }
     }
 
-    public String createAccessToken(String id, Role role, String email) {
-        return createJWT(id, role, email, "access", accessExpiration);
-    }
+    fun createAccessToken(id: String, role: Role, email: String): String =
+            createJWT(id, role, email, "access", accessExpiration)
 
-    public String createRefreshToken(String id, Role role, String email) {
-        return createJWT(id, role, email, "refresh", refreshExpiration);
-    }
+    fun createRefreshToken(id: String, role: Role, email: String): String =
+            createJWT(id, role, email, "refresh", refreshExpiration)
 
-    private String createJWT(String id, Role role, String email, String category, Long expiredMS) {
+    private fun createJWT(
+            id: String,
+            role: Role,
+            email: String,
+            category: String,
+            expiredMS: Long
+    ): String {
         return Jwts.builder()
-            .claim("category", category)
-            .claim("id", id)
-            .claim("role", String.valueOf(role))
-            .claim("email", email)
-            .issuedAt(new Date(System.currentTimeMillis()))
-            .expiration(new Date(System.currentTimeMillis() + expiredMS))
-            .signWith(secretKey)
-            .compact();
+                .claim("category", category)
+                .claim("id", id)
+                .claim("role", role.toString())
+                .claim("email", email)
+                .issuedAt(Date(System.currentTimeMillis()))
+                .expiration(Date(System.currentTimeMillis() + expiredMS))
+                .signWith(secretKey)
+                .compact()
     }
 
-    public String getAccessTokenFromHeaders(HttpServletRequest request) {
-        if (request.getHeader(HttpHeaders.AUTHORIZATION) != null) {
-            return request.getHeader("Authorization").replace("Bearer ", "");
-        }
-        return null;
+    fun getAccessTokenFromHeaders(request: HttpServletRequest): String? {
+        val header = request.getHeader(HttpHeaders.AUTHORIZATION)
+        return header?.replace("Bearer ", "")
     }
 
-    public String getAccessTokenFromCookie(
-        HttpServletRequest request,
-        String cookieName
-    ) {
-        Cookie[] cookies = request.getCookies();
 
-        if (cookies == null) {
-            return null;
-        }
 
-        for (Cookie cookie : cookies) {
-            if (cookieName.equals(cookie.getName())) {
-                String value = cookie.getValue();
-                if (value != null && !value.isBlank()) {
-                    return value;
-                }
-                return null;
-            }
-        }
+    fun jwtVerify(token: String?, type: String): Boolean {
+        if (token.isNullOrBlank()) return false
 
-        return null;
-    }
+        return try {
+            val claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .payload
 
-    public boolean jwtVerify(String token, String type) {
-        if (token == null || token.trim().isEmpty()) {
-            return false;
-        }
-        try {
-            String tokenType = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("category", String.class);
-            return tokenType != null && tokenType.equals(type);
-        } catch (JwtException e) {
-            log.error("JWT 검증 실패: {}", e.getMessage());
-            return false;
+            val category = claims.get("category", String::class.java)
+            category == type
+        } catch (e: JwtException) {
+            log.error("JWT 검증 실패: {}", e.message)
+            false
         }
     }
 }

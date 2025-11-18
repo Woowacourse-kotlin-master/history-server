@@ -1,11 +1,12 @@
-package historywowa.domain.member.presentation.dto.member.res;
+package historywowa.domain.member.presentation.dto.member.res
 
-public record HeritageDto(
-        String heritageImage,
-
-        String heritageText
+data class HeritageDto(
+        val heritageImage: String,
+        val heritageText: String
 ) {
-    public static HeritageDto of(String heritageImage, String heritageText){
-        return new HeritageDto(heritageImage, heritageText);
+    companion object {
+        fun of(heritageImage: String, heritageText: String): HeritageDto {
+            return HeritageDto(heritageImage, heritageText)
+        }
     }
 }

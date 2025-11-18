@@ -1,107 +1,96 @@
-package historywowa.domain.member.domain.entity;
+package historywowa.domain.member.domain.entity
 
-import historywowa.domain.heritage.domain.entity.Heritage;
-import historywowa.domain.oauth2.domain.entity.SocialProvider;
-import historywowa.domain.point.domain.entity.Point;
-import historywowa.domain.point.domain.entity.PointHistory;
-import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.DynamicUpdate;
+import historywowa.domain.heritage.domain.entity.Heritage
+import historywowa.domain.oauth2.domain.entity.SocialProvider
+import historywowa.domain.point.domain.entity.Point
+import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.DynamicUpdate
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-@Getter
 @Entity
-@NoArgsConstructor
-@DynamicUpdate
 @Table(name = "member")
-public class Member {
-    @Id
-    @Column(unique = true, nullable = false)
-    private String id;
+@DynamicUpdate
+class Member(
 
-    // 1) 문화재 이미지 리스트 조회
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Heritage> heritages = new ArrayList<>();
+        @Id
+        @Column(unique = true, nullable = false)
+        var id: String,
 
-    // 2) 포인트
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Point point;
+        @Column(nullable = false)
+        var email: String,
 
+        @Column(nullable = false)
+        var name: String,
 
+        @Column(nullable = true)
+        var profile: String? = null,
 
-    @Column(nullable = false)
-    private String email;
+        @Enumerated(EnumType.STRING)
+        @Column(name = "social_provider", nullable = false)
+        var socialProvider: SocialProvider,
 
-    @Column(nullable = false)
-    private String name;
+        @Enumerated(EnumType.STRING)
+        @Column(nullable = false)
+        var role: Role,
 
-    @Column(nullable = true)
-    private String profile;
+        @Column(nullable = false)
+        @CreationTimestamp
+        var createdAt: LocalDateTime = LocalDateTime.now(),
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "social_provider", nullable = false)
-    private SocialProvider socialProvider;
+        @Column(nullable = false, name = "name_flag")
+        var nameFlag: Boolean = false,
 
-    @Column(nullable = false)
-    @CreationTimestamp
-    private LocalDateTime createdAt;
+        @Column(nullable = true)
+        var password: String? = null
+) {
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private Role role;
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var heritages: MutableList<Heritage> = mutableListOf()
 
-    // 관리자 비번 null이어도됨
-    private String password;
+    @OneToOne(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var point: Point? = null
 
+    // 기존 Builder 대응용 secondary constructor
+    constructor(
+            id: String,
+            email: String,
+            name: String,
+            profile: String?,
+            socialProvider: SocialProvider,
+            role: Role
+    ) : this(
+            id = id,
+            email = email,
+            name = name,
+            profile = profile,
+            socialProvider = socialProvider,
+            role = role,
+            createdAt = LocalDateTime.now(),
+            nameFlag = false
+    )
 
-    // 첫 로그인일시에는 false 이후에는 계속 true
-    @Column(name = "name_flag", nullable = false)
-    private boolean nameFlag;
-
-    @Builder
-    public Member(String id, String email, String name, String profile,
-                  SocialProvider socialProvider, Role role) {
-        this.id = id;
-        this.email = email;
-        this.name = name;
-        this.profile = profile;
-        this.socialProvider = socialProvider;
-        this.role = role;
-        this.nameFlag = false;
+    fun updateEmail(newEmail: String) {
+        this.email = newEmail
     }
 
-    public void updateEmail(String email) {
-        this.email = email;
+    fun updateName(newName: String) {
+        this.name = newName
     }
 
-    public void updateName(String name) {
-        this.name = name;
+    fun updateProfile(newProfile: String?) {
+        this.profile = newProfile
     }
 
-    public void updateProfile(String profile) {
-        this.profile = profile;
+    fun updateIsActivateNameFlag() {
+        this.nameFlag = true
     }
 
-    public void updateIsActivateNameFlag() {
-        this.nameFlag = true;
-    }
-
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
     @PrePersist
-    void onCreate() {
+    fun onCreate() {
         if (createdAt == null) {
-            createdAt = LocalDateTime.now(); // 한국시간
+            createdAt = LocalDateTime.now()
         }
-
     }
 }

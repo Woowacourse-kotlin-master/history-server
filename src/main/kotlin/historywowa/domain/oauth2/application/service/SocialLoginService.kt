@@ -1,17 +1,17 @@
-package historywowa.domain.oauth2.application.service;
+package historywowa.domain.oauth2.application.service
 
-import historywowa.domain.oauth2.domain.entity.SocialProvider;
-import historywowa.domain.oauth2.presentation.dto.req.SocialTokenRequest;
-import historywowa.domain.oauth2.presentation.dto.res.LoginToken;
+import historywowa.domain.oauth2.domain.entity.SocialProvider
+import historywowa.domain.oauth2.presentation.dto.req.SocialTokenRequest
+import historywowa.domain.oauth2.presentation.dto.res.LoginToken
 
-public interface SocialLoginService {
+interface SocialLoginService {
 
-    // 새로운 방식: 앱에서 토큰을 직접 전달받아 로그인
-    LoginToken loginWithToken(SocialProvider provider, SocialTokenRequest tokenRequest);
+    // 앱에서 AccessToken / IDToken을 직접 전달받는 방식
+    fun loginWithToken(provider: SocialProvider, tokenRequest: SocialTokenRequest): LoginToken
 
-    // 기존 방식: Authorization Code로 로그인 (테스트용으로 유지)
-    LoginToken login(SocialProvider provider, String code);
+    // 기존 Authorization Code Flow 로그인
+    fun login(provider: SocialProvider, code: String): LoginToken
 
-    // 로그인 URL 조회 (테스트용)
-    String getLoginUrl(SocialProvider provider);
+    // 로그인 URL 조회 (테스트)
+    fun getLoginUrl(provider: SocialProvider): String
 }

@@ -1,44 +1,44 @@
-package historywowa.domain.oauth2.presentation.dto.res.apple;
+package historywowa.domain.oauth2.presentation.dto.res.apple
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty
 
-public record AppleTokenResponse(
+data class AppleTokenResponse(
+
         @JsonProperty("access_token")
-        String accessToken,
+        val accessToken: String? = null,
 
         @JsonProperty("expires_in")
-        Long expiresIn,
+        val expiresIn: Long? = null,
 
         @JsonProperty("id_token")
-        String idToken,
+        val idToken: String? = null,
 
         @JsonProperty("refresh_token")
-        String refreshToken,
+        val refreshToken: String? = null,
 
         @JsonProperty("token_type")
-        String tokenType,
+        val tokenType: String? = null,
 
         @JsonProperty("error")
-        String error,
+        val error: String? = null,
 
         @JsonProperty("error_description")
-        String errorDescription
+        val errorDescription: String? = null
 ) {
-    // Apple의 경우 사용자 정보는 ID Token에 있으므로 ID Token을 반환하는 메서드 추가
-    public String getUserInfoToken() {
-        return idToken != null ? idToken : accessToken;
+
+    /** Apple의 경우 유저 정보는 ID Token에 포함되어 있음 */
+    fun getUserInfoToken(): String? {
+        return idToken ?: accessToken
     }
 
-    // 에러 체크 메서드
-    public boolean hasError() {
-        return error != null && !error.isEmpty();
+    /** 에러 존재 여부 */
+    fun hasError(): Boolean {
+        return !error.isNullOrBlank()
     }
 
-    // 에러 메시지 반환
-    public String getErrorMessage() {
-        if (hasError()) {
-            return error + (errorDescription != null ? ": " + errorDescription : "");
-        }
-        return null;
+    /** 에러 메시지 반환 */
+    fun getErrorMessage(): String? {
+        if (!hasError()) return null
+        return if (!errorDescription.isNullOrBlank()) "$error: $errorDescription" else error
     }
 }

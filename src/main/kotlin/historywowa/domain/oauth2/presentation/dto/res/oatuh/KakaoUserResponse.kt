@@ -1,44 +1,44 @@
-package historywowa.domain.oauth2.presentation.dto.res.oatuh;
+package historywowa.domain.oauth2.presentation.dto.res.oatuh
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty
 
+data class KakaoUserResponse(
 
-public record KakaoUserResponse(
         @JsonProperty("id")
-        String id,
+        val id: String? = null,
 
         @JsonProperty("kakao_account")
-        KakaoAccount kakaoAccount
+        val kakaoAccount: KakaoAccount? = null
 ) {
-    public String getName() {
-        return kakaoAccount != null && kakaoAccount.profile != null
-                ? kakaoAccount.profile.nickname : null;
+
+    /** 프로필 이름 */
+    fun getName(): String? {
+        return kakaoAccount?.profile?.nickname
     }
 
-    public String getEmail() {
-        return kakaoAccount != null ? kakaoAccount.email : null;
+    /** 이메일 */
+    fun getEmail(): String? {
+        return kakaoAccount?.email
     }
 
-    public String getProfile() {
-        return kakaoAccount != null && kakaoAccount.profile != null
-                ? kakaoAccount.profile.profileImageUrl : null;
+    /** 프로필 이미지 URL */
+    fun getProfile(): String? {
+        return kakaoAccount?.profile?.profileImageUrl
     }
 
-    public record KakaoAccount(
+    data class KakaoAccount(
             @JsonProperty("profile")
-            Profile profile,
+            val profile: Profile? = null,
 
             @JsonProperty("email")
-            String email
-    ) {
-    }
+            val email: String? = null
+    )
 
-    public record Profile(
+    data class Profile(
             @JsonProperty("nickname")
-            String nickname,
+            val nickname: String? = null,
 
             @JsonProperty("profile_image_url")
-            String profileImageUrl
-    ) {
-    }
+            val profileImageUrl: String? = null
+    )
 }

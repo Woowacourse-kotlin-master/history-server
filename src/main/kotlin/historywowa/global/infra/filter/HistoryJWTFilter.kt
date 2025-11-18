@@ -1,88 +1,94 @@
-package historywowa.global.infra.filter;
+package historywowa.global.infra.filter
 
-import historywowa.domain.member.domain.entity.Role;
-import historywowa.global.infra.exception.error.HistoryException;
-import historywowa.global.infra.exception.error.ErrorCode;
-import historywowa.global.jwt.util.JWTUtil;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.AntPathMatcher;
-import org.springframework.web.filter.OncePerRequestFilter;
+import historywowa.global.infra.exception.error.ErrorCode
+import historywowa.global.infra.exception.error.HistoryException
+import historywowa.global.jwt.util.JWTUtil
+import org.slf4j.LoggerFactory
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.util.AntPathMatcher
+import org.springframework.web.filter.OncePerRequestFilter
+import jakarta.servlet.FilterChain
+import jakarta.servlet.ServletException
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import java.io.IOException
 
-@RequiredArgsConstructor
-@Slf4j
-public class HistoryJWTFilter extends OncePerRequestFilter {
+class HistoryJWTFilter(
+        private val jwtUtil: JWTUtil,
+        private val excludedPaths: List<String>
+) : OncePerRequestFilter() {
 
-    private final JWTUtil jwtUtil;
-    private final List<String> excludedPaths;
+    private val log = LoggerFactory.getLogger(HistoryJWTFilter::class.java)
 
-    @Override
-    protected void doFilterInternal(
-        @NonNull HttpServletRequest request,
-        @NonNull HttpServletResponse response,
-        @NonNull FilterChain filterChain
-    )
-        throws ServletException, IOException {
+    @Throws(ServletException::class, IOException::class)
+    override fun doFilterInternal(
+            request: HttpServletRequest,
+            response: HttpServletResponse,
+            filterChain: FilterChain
+    ) {
 
-        String requestURI = request.getRequestURI();
+        val requestURI = request.requestURI
+        val method = request.method
 
-        String method = request.getMethod();
+        // 🔒 소셜 로그인 요청에 대한 중복 로그인 체크
+        if ((requestURI.contains("/api/oauth2/login") && method == "POST") ||
+                (requestURI.contains("/api/oauth2/callback"))
+        ) {
+            val accessToken = jwtUtil.getAccessTokenFromHeaders(request)
 
-        // 소셜 로그인 요청에 대한 중복 로그인 체크
-        if ((requestURI.contains("/api/oauth2/login") && "POST".equals(method)) ||
-            (requestURI.contains("/api/oauth2/callback"))) {
-            String accessToken = jwtUtil.getAccessTokenFromHeaders(request);
             if (accessToken != null && jwtUtil.jwtVerify(accessToken, "access")) {
-                throw new HistoryException(ErrorCode.DUPLICATE_LOGIN_NOT_EXIST);
+                throw HistoryException(ErrorCode.DUPLICATE_LOGIN_NOT_EXIST)
             }
-            filterChain.doFilter(request, response);
-            return;
+
+            filterChain.doFilter(request, response)
+            return
         }
 
-        String accessToken = jwtUtil.getAccessTokenFromHeaders(request);
+        // 🔑 Access Token 추출
+        val accessToken = jwtUtil.getAccessTokenFromHeaders(request)
 
-        log.debug("Access Token: {}", accessToken);
+        log.debug("Access Token: {}", accessToken)
 
-        if (accessToken == null || accessToken.equals("undefined") || accessToken.equals("null")) {
-            filterChain.doFilter(request, response);
-            return;
+        // 토큰 없거나 undefined/null 문자열일 경우 → 인증 없이 통과
+        if (accessToken.isNullOrBlank() ||
+                accessToken == "undefined" ||
+                accessToken == "null"
+        ) {
+            filterChain.doFilter(request, response)
+            return
         }
 
+        // 🔐 토큰 검증 실패
         if (!jwtUtil.jwtVerify(accessToken, "access")) {
-            throw new HistoryException(ErrorCode.INVALID_ACCESS_TOKEN);
+            throw HistoryException(ErrorCode.INVALID_ACCESS_TOKEN)
         }
 
-        String userId = jwtUtil.getId(accessToken);
-        log.debug("User ID: {}", userId);
-        Role role = jwtUtil.getRole(accessToken);
+        // 토큰 유효 → ID / Role 추출
+        val userId = jwtUtil.getId(accessToken)
+        log.debug("User ID: {}", userId)
 
-        GrantedAuthority authority = new SimpleGrantedAuthority(role.getKey());
-        log.debug("User Role: {}", role.getKey());
+        val role = jwtUtil.getRole(accessToken)
+        val authority: GrantedAuthority = SimpleGrantedAuthority(role.key)
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId, null, Collections.singleton(authority));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        log.debug("인증 설정 완료: {}", SecurityContextHolder.getContext().getAuthentication());
-        filterChain.doFilter(request, response);
+        log.debug("User Role: {}", role.key)
+
+        // SecurityContext 인증 설정
+        val authentication =
+                UsernamePasswordAuthenticationToken(userId, null, listOf(authority))
+
+        SecurityContextHolder.getContext().authentication = authentication
+        log.debug("인증 설정 완료: {}", SecurityContextHolder.getContext().authentication)
+
+        filterChain.doFilter(request, response)
     }
 
-    @Override
-    protected boolean shouldNotFilter(
-        @NonNull HttpServletRequest request
-    ) {
-        return excludedPaths.stream()
-            .anyMatch(pattern ->
-                new AntPathMatcher().match(pattern, request.getServletPath()));
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
+        val matcher = AntPathMatcher()
+        return excludedPaths.any { pattern ->
+            matcher.match(pattern, request.servletPath)
+        }
     }
 }

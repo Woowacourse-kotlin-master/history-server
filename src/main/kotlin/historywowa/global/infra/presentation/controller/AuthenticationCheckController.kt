@@ -1,15 +1,21 @@
-package historywowa.global.infra.presentation.controller;
+package historywowa.global.infra.presentation.controller
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api")
-@Slf4j
-public class AuthenticationCheckController {
+class AuthenticationCheckController {
+
+    private val log = LoggerFactory.getLogger(AuthenticationCheckController::class.java)
+
     @GetMapping("/authcheck")
     @ResponseStatus(HttpStatus.OK)
-    public void authcheck() {}
-
+    fun authCheck() {
+        log.debug("Authentication check endpoint accessed")
+    }
 }

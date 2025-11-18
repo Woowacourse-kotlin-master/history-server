@@ -1,73 +1,74 @@
-package historywowa.domain.oauth2.infra;
+package historywowa.domain.oauth2.infra
 
-import historywowa.global.infra.exception.error.HistoryException;
-import historywowa.global.infra.exception.error.ErrorCode;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import historywowa.global.infra.exception.error.ErrorCode
+import historywowa.global.infra.exception.error.HistoryException
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
+import java.security.KeyFactory
+import java.security.PrivateKey
+import java.security.spec.PKCS8EncodedKeySpec
+import java.util.Base64
+import java.util.Date
 
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
-import java.util.Date;
 @Component
-@Slf4j
-public class AppleJwtUtils {
+class AppleJwtUtils(
 
-    @Value("${oauth2.apple.team-id}")
-    private String teamId;
+        @Value("\${oauth2.apple.team-id}")
+        private val teamId: String,
 
-    @Value("${oauth2.apple.key-id}")
-    private String keyId;
+        @Value("\${oauth2.apple.key-id}")
+        private val keyId: String,
 
-    @Value("${oauth2.apple.private-key}")
-    private String privateKey;
+        @Value("\${oauth2.apple.private-key}")
+        private val privateKey: String,
 
-    @Value("${oauth2.apple.client-id}")
-    private String clientId;
+        @Value("\${oauth2.apple.client-id}")
+        private val clientId: String
+) {
 
-    public String generateClientSecret() {
-        try {
-            PrivateKey pKey = getPrivateKey();
+    private val log = LoggerFactory.getLogger(AppleJwtUtils::class.java)
 
-            return Jwts.builder()
+    fun generateClientSecret(): String {
+        return try {
+            val pKey = getPrivateKey()
+
+            Jwts.builder()
                     .setHeaderParam("kid", keyId)
                     .setHeaderParam("alg", "ES256")
                     .setIssuer(teamId)
-                    .setIssuedAt(new Date())
-                    .setExpiration(new Date(System.currentTimeMillis() + 3600000)) // 1시간
+                    .setIssuedAt(Date())
+                    .setExpiration(Date(System.currentTimeMillis() + 3600000)) // 1시간
                     .setAudience("https://appleid.apple.com")
                     .setSubject(clientId)
                     .signWith(pKey, SignatureAlgorithm.ES256)
-                    .compact();
-        } catch (Exception e) {
-            log.error("Apple JWT 생성 실패", e);
-            throw new HistoryException(ErrorCode.APPLE_JWT_ERROR);
+                    .compact()
+
+        } catch (e: Exception) {
+            log.error("Apple JWT 생성 실패", e)
+            throw HistoryException(ErrorCode.APPLE_JWT_ERROR)
         }
     }
 
-    private PrivateKey getPrivateKey() throws Exception {
-        try {
-            // PEM 형식의 private key에서 헤더/푸터 제거 및 개행 문자 제거
-            String privateKeyPEM = privateKey
+    private fun getPrivateKey(): PrivateKey {
+        return try {
+            val privateKeyPEM = privateKey
                     .replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")
-                    .replaceAll("\\s", "");
+                    .replace("\\s".toRegex(), "")
 
-            // Base64 디코딩
-            byte[] keyBytes = Base64.getDecoder().decode(privateKeyPEM);
+            val keyBytes = Base64.getDecoder().decode(privateKeyPEM)
 
-            // PKCS8 형식으로 키 생성
-            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance("EC");
+            val spec = PKCS8EncodedKeySpec(keyBytes)
+            val keyFactory = KeyFactory.getInstance("EC")
 
-            return keyFactory.generatePrivate(spec);
-        } catch (Exception e) {
-            log.error("Apple Private Key 파싱 실패", e);
-            throw new HistoryException(ErrorCode.APPLE_ERROR_KEY);
+            keyFactory.generatePrivate(spec)
+
+        } catch (e: Exception) {
+            log.error("Apple Private Key 파싱 실패", e)
+            throw HistoryException(ErrorCode.APPLE_ERROR_KEY)
         }
     }
 }

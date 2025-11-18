@@ -1,23 +1,18 @@
-package historywowa.global.infra.scheduled;
+package historywowa.global.infra.scheduled
 
-import historywowa.domain.point.domain.repository.PointRepository;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.hibernate.annotations.Comment;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
+import historywowa.domain.point.domain.repository.PointRepository
+import jakarta.transaction.Transactional
+import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Component
 
 @Component
 @Transactional
-@RequiredArgsConstructor
-public class ScheduledService {
-
-    private final PointRepository pointRepository;
+class ScheduledService(
+        private val pointRepository: PointRepository
+) {
 
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
-    public void resetPointsAtMidnight() {
-        pointRepository.updateAllBalanceToFixedValue(2);
+    fun resetPointsAtMidnight() {
+        pointRepository.updateAllBalanceToFixedValue(2)
     }
-
 }

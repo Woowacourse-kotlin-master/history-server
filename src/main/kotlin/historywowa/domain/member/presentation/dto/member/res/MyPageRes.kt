@@ -1,15 +1,13 @@
-package historywowa.domain.member.presentation.dto.member.res;
+package historywowa.domain.member.presentation.dto.member.res
 
-import java.util.List;
-
-public record MyPageRes(
-        String userName,
-
-        String profile,
-
-        List<HeritageDto> heritageDtos
+data class MyPageRes(
+        val userName: String,
+        val profile: String?,
+        val heritageDtos: List<HeritageDto>
 ) {
-    public static MyPageRes of(String userName, String profile, List<HeritageDto> heritageDtos) {
-        return new MyPageRes(userName, profile, heritageDtos);
+    companion object {
+        fun of(userName: String, profile: String?, heritageDtos: List<HeritageDto>): MyPageRes {
+            return MyPageRes(userName, profile, heritageDtos)
+        }
     }
 }

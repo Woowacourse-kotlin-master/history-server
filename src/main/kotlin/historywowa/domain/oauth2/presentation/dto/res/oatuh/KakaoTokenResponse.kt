@@ -1,18 +1,18 @@
-package historywowa.domain.oauth2.presentation.dto.res.oatuh;
+package historywowa.domain.oauth2.presentation.dto.res.oatuh
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty
 
-public record KakaoTokenResponse(
+data class KakaoTokenResponse(
+
         @JsonProperty("access_token")
-        String accessToken,
+        val accessToken: String? = null,
 
         @JsonProperty("refresh_token")
-        String refreshToken,
+        val refreshToken: String? = null,
 
         @JsonProperty("id_token")
-        String idToken,
+        val idToken: String? = null,
 
         @JsonProperty("expires_in")
-        Long expiresIn
-) {
-}
+        val expiresIn: Long? = null
+)

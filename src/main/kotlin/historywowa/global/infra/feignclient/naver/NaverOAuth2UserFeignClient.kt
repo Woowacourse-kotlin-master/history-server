@@ -1,12 +1,18 @@
-package historywowa.global.infra.feignclient.naver;
+package historywowa.global.infra.feignclient.naver
 
-import historywowa.domain.oauth2.presentation.dto.res.naver.NaverUserResponse;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
+import historywowa.domain.oauth2.presentation.dto.res.naver.NaverUserResponse
+import org.springframework.cloud.openfeign.FeignClient
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestHeader
 
-@FeignClient(name = "NaverOAuth2UserInfo", url = "https://openapi.naver.com")
-public interface NaverOAuth2UserFeignClient {
+@FeignClient(
+        name = "NaverOAuth2UserInfo",
+        url = "https://openapi.naver.com"
+)
+interface NaverOAuth2UserFeignClient {
+
     @GetMapping("/v1/nid/me")
-    NaverUserResponse getUserInfo(@RequestHeader("Authorization") String accessToken);
+    fun getUserInfo(
+            @RequestHeader("Authorization") accessToken: String
+    ): NaverUserResponse
 }

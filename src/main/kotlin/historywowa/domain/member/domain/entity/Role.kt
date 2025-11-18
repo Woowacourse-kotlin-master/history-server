@@ -1,42 +1,26 @@
-package historywowa.domain.member.domain.entity;
+package historywowa.domain.member.domain.entity
 
-import historywowa.global.infra.exception.error.HistoryException;
-import historywowa.global.infra.exception.error.ErrorCode;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonCreator
+import historywowa.global.infra.exception.error.ErrorCode
+import historywowa.global.infra.exception.error.HistoryException
 
-import java.util.Arrays;
+enum class Role(val key: String) {
 
-@Getter
-public enum Role {
     USER("ROLE_USER"),
     ADMIN("ROLE_ADMIN");
 
-    private final String key;
+    companion object {
 
-    Role(String key) {
-        this.key = key;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    // Enum 매핑용 메서드
-    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-    public static Role from(String key) {
-        return Arrays.stream(Role.values())
-                .filter(r -> r.getKey().equalsIgnoreCase(key)) // 대소문자 구분 안함
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("등급이 없네요.: " + key));
-    }
-
-    public static Role getByValue(String value) {
-        for (Role role : Role.values()) {
-            if (role.key.equals(value)) {
-                return role;
-            }
+        @JvmStatic
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+        fun from(key: String): Role {
+            return entries.find { it.key.equals(key, ignoreCase = true) }
+                    ?: throw IllegalArgumentException("등급이 없네요.: $key")
         }
-        throw new HistoryException(ErrorCode.INVALID_ROLE);
+
+        fun getByValue(value: String): Role {
+            return entries.find { it.key == value }
+                    ?: throw HistoryException(ErrorCode.INVALID_ROLE)
+        }
     }
 }

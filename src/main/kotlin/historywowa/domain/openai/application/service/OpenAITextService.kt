@@ -1,8 +1,8 @@
-package historywowa.domain.openai.application.service;
+package historywowa.domain.openai.application.service
 
-public interface OpenAITextService {
+interface OpenAITextService {
 
-    String recommendFood(String prompt);
+    fun recommendFood(prompt: String): String
 
-    String recommendRestaurant(String address, String foodName, String city);
+    fun recommendRestaurant(address: String, foodName: String, city: String): String
 }

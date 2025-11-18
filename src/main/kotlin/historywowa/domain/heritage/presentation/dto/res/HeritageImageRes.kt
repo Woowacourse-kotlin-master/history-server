@@ -1,12 +1,12 @@
-package historywowa.domain.heritage.presentation.dto.res;
+package historywowa.domain.heritage.presentation.dto.res
 
-import historywowa.domain.heritage.domain.entity.Heritage;
-
-public record HeritageImageRes(
-        String heritageUrl,
-        String heritageText
+data class HeritageImageRes(
+        val heritageUrl: String,
+        val heritageText: String
 ) {
-    public static HeritageImageRes of(String heritageUrl, String heritageText) {
-        return new HeritageImageRes(heritageUrl, heritageText);
+    companion object {
+        fun of(heritageUrl: String, heritageText: String): HeritageImageRes {
+            return HeritageImageRes(heritageUrl, heritageText)
+        }
     }
 }

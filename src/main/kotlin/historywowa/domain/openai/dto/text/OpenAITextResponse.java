@@ -1,3 +1,4 @@
+/*
 package historywowa.domain.openai.dto.text;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -44,4 +45,4 @@ public class OpenAITextResponse {
         @JsonProperty("total_tokens")
         private int totalTokens;
     }
-}
+}*/

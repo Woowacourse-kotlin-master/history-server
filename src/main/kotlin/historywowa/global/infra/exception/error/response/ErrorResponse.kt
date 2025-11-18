@@ -1,70 +1,56 @@
-package historywowa.global.infra.exception.error.response;
+package historywowa.global.infra.exception.error.response
 
-import historywowa.global.infra.exception.error.HistoryException;
-import historywowa.global.infra.exception.error.ErrorCode;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import java.time.LocalDateTime;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include
+import historywowa.global.infra.exception.error.ErrorCode
+import historywowa.global.infra.exception.error.HistoryException
+import java.time.LocalDateTime
 
-@Builder
 @JsonInclude(Include.NON_NULL)
-public record ErrorResponse(
-    int status,
-    int code,
-    String message,
-    LocalDateTime time,
-
-    // optional
-    LocalDateTime retryAt
+data class ErrorResponse(
+        val status: Int,
+        val code: Int,
+        val message: String,
+        val time: LocalDateTime,
+        val retryAt: LocalDateTime? = null
 ) {
+    companion object {
 
-    public static ErrorResponse of(
-        HistoryException e
-    ) {
-        return ErrorResponse.builder()
-            .status(e.getHttpStatusCode())
-            .code(e.getErrorCode().getCode())
-            .message(e.getMessage())
-            .time(LocalDateTime.now())
-            .build();
+        fun of(e: HistoryException): ErrorResponse =
+                ErrorResponse(
+                        status = e.httpStatusCode,
+                        code = e.errorCode.code,
+                        message = e.message ?: e.errorCode.message,
+                        time = LocalDateTime.now()
+                )
+
+        fun of(errorCode: ErrorCode): ErrorResponse =
+                ErrorResponse(
+                        status = errorCode.httpCode,
+                        code = errorCode.code,
+                        message = errorCode.message,
+                        time = LocalDateTime.now()
+                )
+
+        fun of(errorCode: ErrorCode, customMessage: String): ErrorResponse =
+                ErrorResponse(
+                        status = errorCode.httpCode,
+                        code = errorCode.code,
+                        message = customMessage,
+                        time = LocalDateTime.now()
+                )
+
+        fun of(
+                errorCode: ErrorCode,
+                now: LocalDateTime,
+                retryAt: LocalDateTime
+        ): ErrorResponse =
+                ErrorResponse(
+                        status = errorCode.httpCode,
+                        code = errorCode.code,
+                        message = errorCode.message,
+                        time = now,
+                        retryAt = retryAt
+                )
     }
-
-    public static ErrorResponse of(
-        ErrorCode errorCode
-    ) {
-        return ErrorResponse.builder()
-            .status(errorCode.getHttpCode())
-            .code(errorCode.getCode())
-            .message(errorCode.getMessage())
-            .time(LocalDateTime.now())
-            .build();
-    }
-
-    public static ErrorResponse of(
-        ErrorCode errorCode,
-        String customMessage
-    ) {
-        return ErrorResponse.builder()
-            .status(errorCode.getHttpCode())
-            .code(errorCode.getCode())
-            .message(customMessage)
-            .time(LocalDateTime.now())
-            .build();
-    }
-
-    public static ErrorResponse of(
-        ErrorCode errorCode,
-        LocalDateTime now,
-        LocalDateTime retryAt
-    ) {
-        return ErrorResponse.builder()
-            .status(errorCode.getHttpCode())
-            .code(errorCode.getCode())
-            .message(errorCode.getMessage())
-            .time(now)
-            .retryAt(retryAt)
-            .build();
-    }
-
 }

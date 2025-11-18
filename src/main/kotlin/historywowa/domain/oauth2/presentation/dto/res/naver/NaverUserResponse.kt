@@ -1,34 +1,50 @@
-package historywowa.domain.oauth2.presentation.dto.res.naver;
+package historywowa.domain.oauth2.presentation.dto.res.naver
 
-import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoUserResponse;
-import com.fasterxml.jackson.annotation.JsonProperty;
-public record NaverUserResponse(
-        @JsonProperty("resultcode") String resultCode,
-        @JsonProperty("message") String message,
-        @JsonProperty("response") UserInfo response
+import com.fasterxml.jackson.annotation.JsonProperty
+import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoUserResponse
+
+data class NaverUserResponse(
+
+        @JsonProperty("resultcode")
+        val resultCode: String? = null,
+
+        @JsonProperty("message")
+        val message: String? = null,
+
+        @JsonProperty("response")
+        val response: UserInfo? = null
 ) {
-    public record UserInfo(
-            @JsonProperty("id") String id,
-            @JsonProperty("nickname") String nickname,
-            @JsonProperty("name") String name,
-            @JsonProperty("email") String email,
-            @JsonProperty("profile_image") String profileImage
-    ) {
-    }
 
-    // OAuth2UserResponse로 변환하는 메서드
-    public KakaoUserResponse toOAuth2UserResponse() {
-        if (response == null) return null;
+    data class UserInfo(
+            @JsonProperty("id")
+            val id: String? = null,
 
-        return new KakaoUserResponse(
-                response.id(),
-                new KakaoUserResponse.KakaoAccount(
-                        new KakaoUserResponse.Profile(
-                                response.nickname(),
-                                response.profileImage()
+            @JsonProperty("nickname")
+            val nickname: String? = null,
+
+            @JsonProperty("name")
+            val name: String? = null,
+
+            @JsonProperty("email")
+            val email: String? = null,
+
+            @JsonProperty("profile_image")
+            val profileImage: String? = null
+    )
+
+    /** OAuth2UserResponse로 변환 */
+    fun toOAuth2UserResponse(): KakaoUserResponse? {
+        val r = response ?: return null
+
+        return KakaoUserResponse(
+                r.id,
+                KakaoUserResponse.KakaoAccount(
+                        KakaoUserResponse.Profile(
+                                r.nickname,
+                                r.profileImage
                         ),
-                        response.email()
+                        r.email
                 )
-        );
+        )
     }
 }

@@ -1,24 +1,10 @@
-package historywowa.global.infra.exception.error;
+package historywowa.global.infra.exception.error
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@Getter
-@AllArgsConstructor
-public enum ErrorCode {
-
-    /**
-     * 에러코드 규약
-     * HTTP Status Code는 에러에 가장 유사한 코드를 부여한다.
-     * 사용자정의 에러코드는 음수를 사용한다.
-     * 사용자정의 에러코드는 중복되지 않게 배정한다.
-     * 사용자정의 에러코드는 각 카테고리 별로 100단위씩 끊어서 배정한다. 단, Common 카테고리는 -100 단위를 고정으로 가져간다.
-     */
-
-    /**
-     * 401 : 미승인 403 : 권한의 문제가 있을때 406 : 객체가 조회되지 않을 때 409 : 현재 데이터와 값이 충돌날 때(ex. 아이디 중복) 412 : 파라미터 값이 뭔가 누락됐거나 잘못 왔을 때 422 : 파라미터 문법 오류 424 : 뭔가 단계가
-     * 꼬였을때, 1번안하고 2번하고 그런경우
-     */
+enum class ErrorCode(
+        val code: Int,
+        val message: String,
+        val httpCode: Int
+) {
 
     // Common
     SERVER_UNTRACKED_ERROR(-100, "미등록 서버 에러입니다. 서버 팀에 연락주세요.", 500),
@@ -27,7 +13,7 @@ public enum ErrorCode {
     PARAMETER_VALIDATION_ERROR(-103, "파라미터 검증 에러입니다.", 422),
     PARAMETER_GRAMMAR_ERROR(-104, "파라미터 문법 에러입니다.", 422),
 
-    //Auth
+    // Auth
     UNAUTHORIZED(-200, "인증 자격이 없습니다.", 401),
     FORBIDDEN(-201, "권한이 없습니다.", 403),
     ID_ERROR_TOKEN(-202, "잘못된 ID 토큰입니다.", 401),
@@ -46,24 +32,20 @@ public enum ErrorCode {
     APPLE_JWT_ERROR(-221, "Apple JWT 생성 중 오류가 발생했습니다.", 500),
     UNSUPPORTED_PROVIDER(-222, "지원하지 않는 OAuth2 제공자입니다.", 400),
 
-    // user
+    // User
     INVALID_ROLE(-210, "해당 역할이 존재하지 않습니다.", 400),
     USER_NOT_EXIST(-211, "존재하지 않는 유저입니다.", 404),
     DUPLICATE_EMAIL(-212, "이미 사용 중인 이메일입니다.", 409),
     ADMIN_PERMISSION_REQUIRED(-213, "관리자 권한이 필요합니다.", 403),
 
+    // OpenAI
+    OPENAI_NOT_EXIST(-300, "OpenAI 오류", 500),
+    IMAGE_UPLOAD_FAILED(-301, "이미지 주소가 존재하지 않습니다.", 404),
 
-    // openAI
-    OPENAI_NOT_EXIST(-300, "OpenAI 오류",500),
-
-    // point
+    // Point
     POINT_NOT_EXIST(-1000, "해당 포인트가 존재하지 않습니다.", 404),
     POINT_HISTORY_NOT_EXIST(-1001, "해당 포인트 내역이 존재하지 않습니다.", 404),
     EVENT_PARTICIPATION_LIMIT_EXCEEDED(-1002, "이벤트 응모 가능 횟수를 초과했습니다.", 400),
     INSUFFICIENT_POINT_FOR_HERITAGE(-1003, "포인트가 부족하여 문화재 이미지를 인식할 수 없습니다.", 400),
-    EVENT_NOT_EXIST(-1004,"존재하지 않는 이벤트입니다.",404);
-
-    private final int code;
-    private final String message;
-    private final int httpCode;
+    EVENT_NOT_EXIST(-1004, "존재하지 않는 이벤트입니다.", 404)
 }

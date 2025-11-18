@@ -1,65 +1,69 @@
-package historywowa.global.infra.exception;
+package historywowa.global.infra.exception
 
-
-import historywowa.global.infra.exception.error.HistoryException;
-import historywowa.global.infra.exception.error.ErrorCode;
-import historywowa.global.infra.exception.error.response.ErrorResponse;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import historywowa.global.infra.exception.error.ErrorCode
+import historywowa.global.infra.exception.error.HistoryException
+import historywowa.global.infra.exception.error.response.ErrorResponse
+import org.slf4j.LoggerFactory
+import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
-@Slf4j
-public class GlobalExceptionHandler {
+class GlobalExceptionHandler {
 
-    @ExceptionHandler(HistoryException.class)
-    public ResponseEntity<ErrorResponse> handleFlowException(HistoryException e) {
-        log.error("HistoryException caught - ErrorCode: {}, Message: {}",
-            e.getErrorCode(), e.getMessage());
+    private val log = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
+
+    @ExceptionHandler(HistoryException::class)
+    fun handleFlowException(e: HistoryException): ResponseEntity<ErrorResponse> {
+        log.error(
+                "HistoryException caught - ErrorCode: {}, Message: {}",
+                e.errorCode,
+                e.message
+        )
+
         return ResponseEntity
-            .status(e.getHttpStatusCode())
-            .body(ErrorResponse.of(e));
+                .status(e.httpStatusCode)
+                .body(ErrorResponse.of(e))
     }
 
+    @ExceptionHandler(Exception::class)
+    fun handleUnexpectedException(e: Exception): ResponseEntity<ErrorResponse> {
+        log.error("Unexpected exception caught", e)
 
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception e) {
-        log.error("Unexpected exception caught: ", e);
         return ResponseEntity
-            .status(500)
-            .body(ErrorResponse.of(ErrorCode.SERVER_UNTRACKED_ERROR));
+                .status(500)
+                .body(ErrorResponse.of(ErrorCode.SERVER_UNTRACKED_ERROR))
     }
 
-    // ENUM 클래스 예외 잡을려고 넣었습니다.
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleJsonParseError(HttpMessageNotReadableException e) {
-        Throwable rootCause = e.getRootCause();
-        if (rootCause instanceof HistoryException babException) {
-            return ResponseEntity
-                .status(babException.getHttpStatusCode())
-                .body(ErrorResponse.of(babException));
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleJsonParseError(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
+
+        val root = e.rootCause
+
+        return when (root) {
+            is HistoryException ->
+                ResponseEntity
+                        .status(root.httpStatusCode)
+                        .body(ErrorResponse.of(root))
+
+            else ->
+                ResponseEntity
+                        .status(400)
+                        .body(ErrorResponse.of(
+                                ErrorCode.PARAMETER_GRAMMAR_ERROR,
+                                root?.message ?: "잘못된 요청입니다."
+                        ))
+        }
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<Map<String, String>> {
+        val errors = ex.bindingResult.fieldErrors.associate {
+            it.field to (it.defaultMessage ?: "잘못된 값입니다.")
         }
 
-        return ResponseEntity
-            .status(400)
-            .body(ErrorResponse.of(ErrorCode.PARAMETER_GRAMMAR_ERROR, rootCause != null ? rootCause.getMessage() : "잘못된 요청입니다."));
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationException(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-            errors.put(error.getField(), error.getDefaultMessage())
-        );
-
-        return ResponseEntity.badRequest().body(errors);
+        return ResponseEntity.badRequest().body(errors)
     }
 }
