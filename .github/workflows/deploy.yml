@@ -3,7 +3,7 @@ name: history CI/CD
 on:
   push:
     branches:
-      - chltmdgh522
+      - feat#11-server
 
 jobs:
   build-and-deploy:
