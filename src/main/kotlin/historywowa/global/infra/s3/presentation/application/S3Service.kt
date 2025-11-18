@@ -9,8 +9,8 @@ interface S3Service {
 
     // 정적 지도 이미지 저장
     fun storeStaticMapImage(
-            key: String,
-            bytes: ByteArray,
-            contentType: String
+        key: String,
+        bytes: ByteArray,
+        contentType: String
     ): String
 }

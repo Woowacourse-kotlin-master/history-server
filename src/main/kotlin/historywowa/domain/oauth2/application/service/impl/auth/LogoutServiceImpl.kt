@@ -13,21 +13,20 @@ import org.springframework.stereotype.Service
 @Service
 @Transactional
 class LogoutServiceImpl(
-        private val jwtUtil: JWTUtil,
-        private val jsonWebTokenRepository: JsonWebTokenRepository,
-        private val socialTokenRepository: SocialTokenRepository
+    private val jwtUtil: JWTUtil,
+    private val jsonWebTokenRepository: JsonWebTokenRepository,
+    private val socialTokenRepository: SocialTokenRepository
 ) : LogoutService {
 
     private val log = LoggerFactory.getLogger(LogoutServiceImpl::class.java)
 
     override fun logout(userId: String, refreshToken: String) {
-
         if (!jwtUtil.jwtVerify(refreshToken, "refresh")) {
             throw HistoryException(ErrorCode.JWT_ERROR_TOKEN)
         }
 
         val jsonWebToken = jsonWebTokenRepository.findById(refreshToken)
-                .orElseThrow { HistoryException(ErrorCode.REFRESH_TOKEN_NOT_EXIST) }
+            .orElseThrow { HistoryException(ErrorCode.REFRESH_TOKEN_NOT_EXIST) }
 
         socialTokenRepository.deleteByUserId(jsonWebToken.providerId)
         jsonWebTokenRepository.delete(jsonWebToken)

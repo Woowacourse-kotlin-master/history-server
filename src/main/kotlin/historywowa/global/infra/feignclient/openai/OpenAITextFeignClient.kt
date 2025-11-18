@@ -1,3 +1,4 @@
+/*
 package historywowa.global.infra.feignclient.openai
 
 import historywowa.domain.openai.dto.text.OpenAITextRequest
@@ -20,3 +21,4 @@ interface OpenAITextFeignClient {
     ): OpenAITextResponse
 }
 
+*/

@@ -13,7 +13,7 @@ import java.util.UUID
 
 @Service
 class S3ServiceImpl(
-        private val s3Client: S3Client
+    private val s3Client: S3Client
 ) : S3Service {
 
     @Value("\${cloud.aws.s3.bucket}")
@@ -30,38 +30,38 @@ class S3ServiceImpl(
         }
 
         val originalFilename = multipartFile.originalFilename
-                ?: throw IOException("파일 이름을 가져올 수 없습니다.")
+            ?: throw IOException("파일 이름을 가져올 수 없습니다.")
 
         val finalFile = createStoreFileName(originalFilename)
 
         val putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(finalFile)
-                .contentType(multipartFile.contentType)
-                .build()
+            .bucket(bucketName)
+            .key(finalFile)
+            .contentType(multipartFile.contentType)
+            .build()
 
         s3Client.putObject(
-                putObjectRequest,
-                RequestBody.fromInputStream(multipartFile.inputStream, multipartFile.size)
+            putObjectRequest,
+            RequestBody.fromInputStream(multipartFile.inputStream, multipartFile.size)
         )
 
         return "https://$bucketName.s3.$bucketRegion.amazonaws.com/$finalFile"
     }
 
     override fun storeStaticMapImage(
-            key: String,
-            bytes: ByteArray,
-            contentType: String
+        key: String,
+        bytes: ByteArray,
+        contentType: String
     ): String {
         val putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .contentType(contentType)
-                .build()
+            .bucket(bucketName)
+            .key(key)
+            .contentType(contentType)
+            .build()
 
         s3Client.putObject(
-                putObjectRequest,
-                RequestBody.fromBytes(bytes)
+            putObjectRequest,
+            RequestBody.fromBytes(bytes)
         )
 
         return "https://$bucketName.s3.$bucketRegion.amazonaws.com/$key"

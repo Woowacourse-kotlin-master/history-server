@@ -5,31 +5,31 @@ import org.springframework.data.redis.core.RedisHash
 import java.time.LocalDateTime
 @RedisHash(value = "SocialToken")
 data class SocialToken(
-        val id: String,
-        val userId: String,
-        val provider: SocialProvider,
-        val accessToken: String,
-        val refreshToken: String,
-        val expiresIn: LocalDateTime
+    val id: String,
+    val userId: String,
+    val provider: SocialProvider,
+    val accessToken: String,
+    val refreshToken: String,
+    val expiresIn: LocalDateTime
 ) {
     companion object {
         fun generateId(userId: String, provider: SocialProvider): String =
-                "$userId:${provider.value}"
+            "$userId:${provider.value}"
 
         fun of(
-                userId: String,
-                provider: SocialProvider,
-                accessToken: String,
-                refreshToken: String,
-                expiresIn: LocalDateTime
+            userId: String,
+            provider: SocialProvider,
+            accessToken: String,
+            refreshToken: String,
+            expiresIn: LocalDateTime
         ): SocialToken =
-                SocialToken(
-                        id = generateId(userId, provider),
-                        userId = userId,
-                        provider = provider,
-                        accessToken = accessToken,
-                        refreshToken = refreshToken,
-                        expiresIn = expiresIn
-                )
+            SocialToken(
+                id = generateId(userId, provider),
+                userId = userId,
+                provider = provider,
+                accessToken = accessToken,
+                refreshToken = refreshToken,
+                expiresIn = expiresIn
+            )
     }
 }

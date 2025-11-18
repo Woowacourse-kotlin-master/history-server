@@ -1,17 +1,16 @@
 package historywowa.domain.oauth2.application.service.impl.oauth
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import historywowa.domain.oauth2.application.service.OAuth2Service
 import historywowa.domain.oauth2.domain.entity.SocialProvider
 import historywowa.domain.oauth2.infra.AppleJwtUtils
 import historywowa.domain.oauth2.presentation.dto.req.SocialTokenRequest
-import historywowa.domain.oauth2.presentation.dto.res.apple.AppleTokenResponse
 import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoTokenResponse
 import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoUserResponse
 import historywowa.global.infra.exception.error.ErrorCode
 import historywowa.global.infra.exception.error.HistoryException
 import historywowa.global.infra.feignclient.ios.AppleOAuth2FeignClient
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.transaction.Transactional
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -23,13 +22,13 @@ import java.util.Base64
 @Service
 @Transactional
 class AppleOAuth2ServiceImpl(
-        private val appleOAuth2FeignClient: AppleOAuth2FeignClient,
-        private val appleJwtUtils: AppleJwtUtils,
-        private val objectMapper: ObjectMapper,
-        @Value("\${oauth2.apple.client-id}")
-        private val clientId: String,
-        @Value("\${oauth2.apple.redirect-uri}")
-        private val redirectUri: String
+    private val appleOAuth2FeignClient: AppleOAuth2FeignClient,
+    private val appleJwtUtils: AppleJwtUtils,
+    private val objectMapper: ObjectMapper,
+    @Value("\${oauth2.apple.client-id}")
+    private val clientId: String,
+    @Value("\${oauth2.apple.redirect-uri}")
+    private val redirectUri: String
 ) : OAuth2Service {
 
     private val log = LoggerFactory.getLogger(AppleOAuth2ServiceImpl::class.java)
@@ -50,19 +49,18 @@ class AppleOAuth2ServiceImpl(
         val clientSecret = appleJwtUtils.generateClientSecret()
 
         val appleResponse = appleOAuth2FeignClient.getAccessToken(
-                "authorization_code",
-                clientId,
-                clientSecret,
-                code,
-                redirectUri
+            "authorization_code",
+            clientId,
+            clientSecret,
+            code,
+            redirectUri
         )
 
-
         return KakaoTokenResponse(
-                appleResponse.accessToken,
-                appleResponse.refreshToken,
-                appleResponse.idToken,
-                appleResponse.expiresIn
+            appleResponse.accessToken,
+            appleResponse.refreshToken,
+            appleResponse.idToken,
+            appleResponse.expiresIn
         )
     }
 
@@ -70,19 +68,18 @@ class AppleOAuth2ServiceImpl(
         val clientSecret = appleJwtUtils.generateClientSecret()
 
         val appleResponse = appleOAuth2FeignClient.refreshToken(
-                "refresh_token",
-                clientId,
-                clientSecret,
-                refreshToken
+            "refresh_token",
+            clientId,
+            clientSecret,
+            refreshToken
         )
 
         return KakaoTokenResponse(
-                appleResponse.accessToken,
-                appleResponse.refreshToken,
-                appleResponse.idToken,
-                appleResponse.expiresIn
+            appleResponse.accessToken,
+            appleResponse.refreshToken,
+            appleResponse.idToken,
+            appleResponse.expiresIn
         )
-
     }
 
     override fun getUserInfo(accessToken: String): KakaoUserResponse {
@@ -106,10 +103,10 @@ class AppleOAuth2ServiceImpl(
 
     override fun convertToTokenResponse(tokenRequest: SocialTokenRequest): KakaoTokenResponse {
         return KakaoTokenResponse(
-                tokenRequest.accessToken,
-                tokenRequest.refreshToken,
-                tokenRequest.idToken,
-                tokenRequest.expiresIn
+            tokenRequest.accessToken,
+            tokenRequest.refreshToken,
+            tokenRequest.idToken,
+            tokenRequest.expiresIn
         )
     }
 
@@ -143,7 +140,7 @@ class AppleOAuth2ServiceImpl(
             val claims: JsonNode = objectMapper.readTree(payload)
 
             val sub = claims["sub"]?.asText()
-                    ?: throw HistoryException(ErrorCode.ID_ERROR_TOKEN)
+                ?: throw HistoryException(ErrorCode.ID_ERROR_TOKEN)
 
             val email = claims["email"]?.asText()
 
@@ -153,16 +150,15 @@ class AppleOAuth2ServiceImpl(
             }
 
             return KakaoUserResponse(
-                    sub,
-                    KakaoUserResponse.KakaoAccount(
-                            KakaoUserResponse.Profile(
-                                    name ?: "Apple User",
-                                    null
-                            ),
-                            email
-                    )
+                sub,
+                KakaoUserResponse.KakaoAccount(
+                    KakaoUserResponse.Profile(
+                        name ?: "Apple User",
+                        null
+                    ),
+                    email
+                )
             )
-
         } catch (e: Exception) {
             log.error("Apple ID Token 파싱 실패", e)
             throw HistoryException(ErrorCode.ID_ERROR_TOKEN)

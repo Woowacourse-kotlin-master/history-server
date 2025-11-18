@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 
 @FeignClient(
-        name = "OpenAIVisionAPI",
-        url = "\${openai.api.url}"
+    name = "OpenAIVisionAPI",
+    url = "\${openai.api.url}"
 )
 interface OpenAIVisionFeignClient {
 
     @PostMapping("/v1/chat/completions")
     fun generateVision(
-            @RequestHeader("Authorization") apiKey: String,
-            @RequestBody request: OpenAIVisionReq
+        @RequestHeader("Authorization") apiKey: String,
+        @RequestBody request: OpenAIVisionReq
     ): OpenAIVisionRes
 }

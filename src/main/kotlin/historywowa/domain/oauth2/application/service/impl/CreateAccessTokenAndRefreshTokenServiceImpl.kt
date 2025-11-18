@@ -17,27 +17,26 @@ import org.springframework.stereotype.Service
 @Service
 @Transactional
 class CreateAccessTokenAndRefreshTokenServiceImpl(
-        private val jwtUtil: JWTUtil,
-        private val jsonWebTokenRepository: JsonWebTokenRepository,
-        private val memberRepository: MemberRepository
+    private val jwtUtil: JWTUtil,
+    private val jsonWebTokenRepository: JsonWebTokenRepository,
+    private val memberRepository: MemberRepository
 ) : CreateAccessTokenAndRefreshTokenService {
 
     private val log = LoggerFactory.getLogger(CreateAccessTokenAndRefreshTokenServiceImpl::class.java)
 
     override fun createAccessTokenAndRefreshToken(
-            userId: String,
-            role: Role,
-            email: String
+        userId: String,
+        role: Role,
+        email: String
     ): LoginToken {
-
         val accessToken = jwtUtil.createAccessToken(userId, role, email)
         val refreshToken = jwtUtil.createRefreshToken(userId, role, email)
 
         val jsonWebToken = JsonWebToken.of(
-                refreshToken = refreshToken,
-                providerId = userId,
-                email = email,
-                role = role
+            refreshToken = refreshToken,
+            providerId = userId,
+            email = email,
+            role = role
         )
 
         jsonWebTokenRepository.save(jsonWebToken)
@@ -49,7 +48,7 @@ class CreateAccessTokenAndRefreshTokenServiceImpl(
 
     private fun onBoarding(userId: String): Boolean {
         val member: Member = memberRepository.findById(userId)
-                .orElseThrow { HistoryException(ErrorCode.USER_NOT_EXIST) }
+            .orElseThrow { HistoryException(ErrorCode.USER_NOT_EXIST) }
 
         return member.nameFlag
     }

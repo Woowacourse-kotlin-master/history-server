@@ -13,5 +13,5 @@ import org.springframework.scheduling.annotation.EnableScheduling
 class HistorywowaApplication
 
 fun main(args: Array<String>) {
-	runApplication<HistorywowaApplication>(*args)
+    runApplication<HistorywowaApplication>(*args)
 }

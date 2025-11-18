@@ -5,31 +5,31 @@ import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoUserResponse
 
 data class NaverUserResponse(
 
-        @JsonProperty("resultcode")
-        val resultCode: String? = null,
+    @JsonProperty("resultcode")
+    val resultCode: String? = null,
 
-        @JsonProperty("message")
-        val message: String? = null,
+    @JsonProperty("message")
+    val message: String? = null,
 
-        @JsonProperty("response")
-        val response: UserInfo? = null
+    @JsonProperty("response")
+    val response: UserInfo? = null
 ) {
 
     data class UserInfo(
-            @JsonProperty("id")
-            val id: String? = null,
+        @JsonProperty("id")
+        val id: String? = null,
 
-            @JsonProperty("nickname")
-            val nickname: String? = null,
+        @JsonProperty("nickname")
+        val nickname: String? = null,
 
-            @JsonProperty("name")
-            val name: String? = null,
+        @JsonProperty("name")
+        val name: String? = null,
 
-            @JsonProperty("email")
-            val email: String? = null,
+        @JsonProperty("email")
+        val email: String? = null,
 
-            @JsonProperty("profile_image")
-            val profileImage: String? = null
+        @JsonProperty("profile_image")
+        val profileImage: String? = null
     )
 
     /** OAuth2UserResponse로 변환 */
@@ -37,14 +37,14 @@ data class NaverUserResponse(
         val r = response ?: return null
 
         return KakaoUserResponse(
-                r.id,
-                KakaoUserResponse.KakaoAccount(
-                        KakaoUserResponse.Profile(
-                                r.nickname,
-                                r.profileImage
-                        ),
-                        r.email
-                )
+            r.id,
+            KakaoUserResponse.KakaoAccount(
+                KakaoUserResponse.Profile(
+                    r.nickname,
+                    r.profileImage
+                ),
+                r.email
+            )
         )
     }
 }

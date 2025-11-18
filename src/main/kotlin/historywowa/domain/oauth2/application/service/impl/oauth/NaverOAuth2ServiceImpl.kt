@@ -4,11 +4,8 @@ import historywowa.domain.oauth2.application.service.OAuth2Service
 import historywowa.domain.oauth2.domain.entity.SocialProvider
 import historywowa.domain.oauth2.presentation.dto.req.SocialTokenRequest
 import historywowa.domain.oauth2.presentation.dto.res.naver.NaverTokenResponse
-import historywowa.domain.oauth2.presentation.dto.res.naver.NaverUserResponse
 import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoTokenResponse
 import historywowa.domain.oauth2.presentation.dto.res.oatuh.KakaoUserResponse
-import historywowa.global.infra.exception.error.ErrorCode
-import historywowa.global.infra.exception.error.HistoryException
 import historywowa.global.infra.feignclient.naver.NaverOAuth2URLFeignClient
 import historywowa.global.infra.feignclient.naver.NaverOAuth2UserFeignClient
 import jakarta.transaction.Transactional
@@ -21,62 +18,62 @@ import java.util.UUID
 @Service
 @Transactional
 class NaverOAuth2ServiceImpl(
-        private val naverOAuth2URLFeignClient: NaverOAuth2URLFeignClient,
-        private val naverOAuth2UserFeignClient: NaverOAuth2UserFeignClient,
+    private val naverOAuth2URLFeignClient: NaverOAuth2URLFeignClient,
+    private val naverOAuth2UserFeignClient: NaverOAuth2UserFeignClient,
 
-        @Value("\${oauth2.naver.client-id}")
-        private val clientId: String,
+    @Value("\${oauth2.naver.client-id}")
+    private val clientId: String,
 
-        @Value("\${oauth2.naver.client-secret}")
-        private val clientSecret: String,
+    @Value("\${oauth2.naver.client-secret}")
+    private val clientSecret: String,
 
-        @Value("\${oauth2.naver.redirect-uri}")
-        private val redirectUri: String,
+    @Value("\${oauth2.naver.redirect-uri}")
+    private val redirectUri: String,
 
-        @Value("\${oauth2.naver.base-url}")
-        private val baseUrl: String,
+    @Value("\${oauth2.naver.base-url}")
+    private val baseUrl: String
 ) : OAuth2Service {
 
     override fun getLoginUrl(): String {
         val state = generateState()
 
         return "$baseUrl?response_type=code" +
-                "&client_id=$clientId" +
-                "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
-                "&state=$state"
+            "&client_id=$clientId" +
+            "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8) +
+            "&state=$state"
     }
 
     override fun getTokens(code: String): KakaoTokenResponse {
         val response: NaverTokenResponse = naverOAuth2URLFeignClient.getAccessToken(
-                "authorization_code",
-                clientId,
-                clientSecret,
-                redirectUri,
-                code,
-                "state_value"
+            "authorization_code",
+            clientId,
+            clientSecret,
+            redirectUri,
+            code,
+            "state_value"
         )
 
         return KakaoTokenResponse(
-                accessToken = response.accessToken,
-                refreshToken = response.refreshToken,
-                idToken = "idnull",
-                expiresIn = response.expiresIn?.toLong()
+            accessToken = response.accessToken,
+            refreshToken = response.refreshToken,
+            idToken = "idnull",
+            expiresIn = response.expiresIn?.toLong()
         )
     }
 
     override fun refreshTokens(refreshToken: String): KakaoTokenResponse {
         val response: NaverTokenResponse = naverOAuth2URLFeignClient.refreshToken(
-                "refresh_token",
-                clientId,
-                clientSecret,
-                refreshToken
+            "refresh_token",
+            clientId,
+            clientSecret,
+            refreshToken
         )
 
         return KakaoTokenResponse(
-                accessToken = response.accessToken,
-                refreshToken = response.refreshToken,
-                idToken = "idnull",
-                expiresIn = response.expiresIn?.toLong()
+            accessToken = response.accessToken,
+            refreshToken = response.refreshToken,
+            idToken = "idnull",
+            expiresIn = response.expiresIn?.toLong()
         )
     }
 
@@ -108,10 +105,10 @@ class NaverOAuth2ServiceImpl(
 
     override fun convertToTokenResponse(tokenRequest: SocialTokenRequest): KakaoTokenResponse {
         return KakaoTokenResponse(
-                accessToken = tokenRequest.accessToken,
-                refreshToken = tokenRequest.refreshToken,
-                idToken = "idnull",
-                expiresIn = tokenRequest.expiresIn
+            accessToken = tokenRequest.accessToken,
+            refreshToken = tokenRequest.refreshToken,
+            idToken = "idnull",
+            expiresIn = tokenRequest.expiresIn
         )
     }
 

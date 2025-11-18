@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestHeader
 
 @FeignClient(
-        name = "KakaoOAuth2UserInfo",
-        url = "https://kapi.kakao.com"
+    name = "KakaoOAuth2UserInfo",
+    url = "https://kapi.kakao.com"
 )
 interface KakaoOAuth2UserFeignClient {
 
     @GetMapping("/v2/user/me")
     fun getUserInfo(
-            @RequestHeader("Authorization") accessToken: String
+        @RequestHeader("Authorization") accessToken: String
     ): KakaoUserResponse
 }

@@ -5,7 +5,7 @@ import historywowa.domain.member.domain.entity.Role
 import historywowa.domain.member.domain.repository.MemberRepository
 import historywowa.domain.oauth2.application.service.ReissueService
 import historywowa.domain.oauth2.presentation.dto.res.LoginToken
-import historywowa.global.infra.exception.error.ErrorCode.*
+import historywowa.global.infra.exception.error.ErrorCode
 import historywowa.global.infra.exception.error.HistoryException
 import historywowa.global.jwt.domain.entity.JsonWebToken
 import historywowa.global.jwt.domain.repository.JsonWebTokenRepository
@@ -17,22 +17,21 @@ import org.springframework.stereotype.Service
 @Service
 @Transactional
 class ReissueServiceImpl(
-        private val jwtUtil: JWTUtil,
-        private val jsonWebTokenRepository: JsonWebTokenRepository,
-        private val memberRepository: MemberRepository
+    private val jwtUtil: JWTUtil,
+    private val jsonWebTokenRepository: JsonWebTokenRepository,
+    private val memberRepository: MemberRepository
 ) : ReissueService {
 
     private val log = LoggerFactory.getLogger(ReissueServiceImpl::class.java)
 
     override fun reissue(refreshToken: String): LoginToken {
-
         if (!jwtUtil.jwtVerify(refreshToken, "refresh")) {
             log.info("Refresh token not valid")
-            throw HistoryException(INVALID_REFRESH_TOKEN)
+            throw HistoryException(ErrorCode.INVALID_REFRESH_TOKEN)
         }
 
         val jsonWebToken = jsonWebTokenRepository.findById(refreshToken)
-                .orElseThrow { HistoryException(REFRESH_TOKEN_NOT_EXIST) }
+            .orElseThrow { HistoryException(ErrorCode.REFRESH_TOKEN_NOT_EXIST) }
 
         val userId = jsonWebToken.providerId
         val role: Role = jsonWebToken.role
@@ -42,10 +41,10 @@ class ReissueServiceImpl(
         val newRefreshToken = jwtUtil.createRefreshToken(userId, role, email)
 
         val newJsonWebToken = JsonWebToken.of(
-                refreshToken = refreshToken,
-                providerId = userId,
-                email = email,
-                role = role
+            refreshToken = refreshToken,
+            providerId = userId,
+            email = email,
+            role = role
         )
 
         jsonWebTokenRepository.delete(jsonWebToken)
@@ -56,7 +55,7 @@ class ReissueServiceImpl(
 
     fun onBoarding(userId: String): Boolean {
         val member: Member = memberRepository.findById(userId)
-                .orElseThrow { HistoryException(USER_NOT_EXIST) }
+            .orElseThrow { HistoryException(ErrorCode.USER_NOT_EXIST) }
 
         return member.nameFlag
     }

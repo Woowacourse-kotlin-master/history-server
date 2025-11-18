@@ -18,15 +18,14 @@ import org.springframework.web.multipart.MultipartFile
 @Service
 @Transactional
 class HeritageServiceImpl(
-        private val s3Service: S3Service,
-        private val heritageRepository: HeritageRepository,
-        private val openAIVisionService: OpenAIVisionService,
-        private val memberRepository: MemberRepository,
-        private val pointService: PointService
+    private val s3Service: S3Service,
+    private val heritageRepository: HeritageRepository,
+    private val openAIVisionService: OpenAIVisionService,
+    private val memberRepository: MemberRepository,
+    private val pointService: PointService
 ) : HeritageService {
 
     override fun recognize(heritageImage: MultipartFile, userId: String): HeritageImageRes {
-
         val member = getMemberOrThrow(userId)
 
         validatePoint(member)
@@ -57,15 +56,15 @@ class HeritageServiceImpl(
 
     private fun saveHeritageRecord(member: Member, url: String, text: String): Heritage {
         val heritage = Heritage(
-                member = member,
-                heritageUrl = url,
-                heritageText = text
+            member = member,
+            heritageUrl = url,
+            heritageText = text
         )
         return heritageRepository.save(heritage)
     }
 
     private fun getMemberOrThrow(userId: String): Member {
         return memberRepository.findById(userId)
-                .orElseThrow { HistoryException(ErrorCode.USER_NOT_EXIST) }
+            .orElseThrow { HistoryException(ErrorCode.USER_NOT_EXIST) }
     }
 }

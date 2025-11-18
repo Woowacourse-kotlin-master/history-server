@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 @Component
 @Transactional
 class ScheduledService(
-        private val pointRepository: PointRepository
+    private val pointRepository: PointRepository
 ) {
 
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")

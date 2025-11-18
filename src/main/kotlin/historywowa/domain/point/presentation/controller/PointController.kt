@@ -16,22 +16,22 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/point")
 @Tag(name = "Point", description = "포인트 관련 API")
 class PointController(
-        private val pointService: PointService
+    private val pointService: PointService
 ) {
 
     @Operation(
-            summary = "포인트 헤더 내역 조회 API",
-            description = "회원의 포인트 잔액과 거래 이력을 조회합니다."
+        summary = "포인트 헤더 내역 조회 API",
+        description = "회원의 포인트 잔액과 거래 이력을 조회합니다."
     )
     @ApiResponses(
-            value = [
-                ApiResponse(responseCode = "200", description = "포인트 내역 조회 성공"),
-                ApiResponse(responseCode = "404", description = "포인트 정보가 존재하지 않음")
-            ]
+        value = [
+            ApiResponse(responseCode = "200", description = "포인트 내역 조회 성공"),
+            ApiResponse(responseCode = "404", description = "포인트 정보가 존재하지 않음")
+        ]
     )
     @GetMapping
     fun getPointHistory(
-            @AuthenticationPrincipal memberId: String
+        @AuthenticationPrincipal memberId: String
     ): ResponseEntity<GetPointRes> {
         return ResponseEntity.ok(pointService.getMemberPoint(memberId))
     }

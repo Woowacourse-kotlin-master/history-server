@@ -3,6 +3,10 @@ package historywowa.global.infra.filter
 import historywowa.global.infra.exception.error.ErrorCode
 import historywowa.global.infra.exception.error.HistoryException
 import historywowa.global.jwt.util.JWTUtil
+import jakarta.servlet.FilterChain
+import jakarta.servlet.ServletException
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
@@ -10,32 +14,27 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.OncePerRequestFilter
-import jakarta.servlet.FilterChain
-import jakarta.servlet.ServletException
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
 import java.io.IOException
 
 class HistoryJWTFilter(
-        private val jwtUtil: JWTUtil,
-        private val excludedPaths: List<String>
+    private val jwtUtil: JWTUtil,
+    private val excludedPaths: List<String>
 ) : OncePerRequestFilter() {
 
     private val log = LoggerFactory.getLogger(HistoryJWTFilter::class.java)
 
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
-            request: HttpServletRequest,
-            response: HttpServletResponse,
-            filterChain: FilterChain
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain
     ) {
-
         val requestURI = request.requestURI
         val method = request.method
 
         // 🔒 소셜 로그인 요청에 대한 중복 로그인 체크
         if ((requestURI.contains("/api/oauth2/login") && method == "POST") ||
-                (requestURI.contains("/api/oauth2/callback"))
+            (requestURI.contains("/api/oauth2/callback"))
         ) {
             val accessToken = jwtUtil.getAccessTokenFromHeaders(request)
 
@@ -54,8 +53,8 @@ class HistoryJWTFilter(
 
         // 토큰 없거나 undefined/null 문자열일 경우 → 인증 없이 통과
         if (accessToken.isNullOrBlank() ||
-                accessToken == "undefined" ||
-                accessToken == "null"
+            accessToken == "undefined" ||
+            accessToken == "null"
         ) {
             filterChain.doFilter(request, response)
             return
@@ -77,7 +76,7 @@ class HistoryJWTFilter(
 
         // SecurityContext 인증 설정
         val authentication =
-                UsernamePasswordAuthenticationToken(userId, null, listOf(authority))
+            UsernamePasswordAuthenticationToken(userId, null, listOf(authority))
 
         SecurityContextHolder.getContext().authentication = authentication
         log.debug("인증 설정 완료: {}", SecurityContextHolder.getContext().authentication)

@@ -4,26 +4,26 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class AppleTokenResponse(
 
-        @JsonProperty("access_token")
-        val accessToken: String? = null,
+    @JsonProperty("access_token")
+    val accessToken: String? = null,
 
-        @JsonProperty("expires_in")
-        val expiresIn: Long? = null,
+    @JsonProperty("expires_in")
+    val expiresIn: Long? = null,
 
-        @JsonProperty("id_token")
-        val idToken: String? = null,
+    @JsonProperty("id_token")
+    val idToken: String? = null,
 
-        @JsonProperty("refresh_token")
-        val refreshToken: String? = null,
+    @JsonProperty("refresh_token")
+    val refreshToken: String? = null,
 
-        @JsonProperty("token_type")
-        val tokenType: String? = null,
+    @JsonProperty("token_type")
+    val tokenType: String? = null,
 
-        @JsonProperty("error")
-        val error: String? = null,
+    @JsonProperty("error")
+    val error: String? = null,
 
-        @JsonProperty("error_description")
-        val errorDescription: String? = null
+    @JsonProperty("error_description")
+    val errorDescription: String? = null
 ) {
 
     /** Apple의 경우 유저 정보는 ID Token에 포함되어 있음 */

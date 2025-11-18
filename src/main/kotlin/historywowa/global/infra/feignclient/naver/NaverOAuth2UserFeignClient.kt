@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestHeader
 
 @FeignClient(
-        name = "NaverOAuth2UserInfo",
-        url = "https://openapi.naver.com"
+    name = "NaverOAuth2UserInfo",
+    url = "https://openapi.naver.com"
 )
 interface NaverOAuth2UserFeignClient {
 
     @GetMapping("/v1/nid/me")
     fun getUserInfo(
-            @RequestHeader("Authorization") accessToken: String
+        @RequestHeader("Authorization") accessToken: String
     ): NaverUserResponse
 }
