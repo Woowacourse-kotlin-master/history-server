@@ -3,7 +3,7 @@ name: history CI/CD
 on:
   push:
     branches:
-      - feat#11-server
+      - dev
 
 jobs:
   build-and-deploy:
